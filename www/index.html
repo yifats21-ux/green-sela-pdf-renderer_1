@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>וינה לשלומי — מתנת יום הולדת</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&family=Assistant:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+<link rel="stylesheet" href="app/app.css">
+<link rel="stylesheet" href="app/native.css">
+</head>
+<body>
+
+<div class="phone">
+  <div class="phone__screen">
+    <div class="island"></div>
+
+    <!-- סטטוס בר -->
+    <div class="statusbar">
+      <span id="sb-time">9:41</span>
+      <span class="sb-right">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 17h3v4H2zM7 13h3v8H7zM12 9h3v12h-3zM17 4h3v17h-3z"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4C7 4 3.2 6 1 9l11 13L23 9c-2.2-3-6-5-11-5z" opacity=".55"/><path d="M12 4C9 4 6.3 5 4.3 6.7L12 16l7.7-9.3C17.7 5 15 4 12 4z"/></svg>
+        <svg viewBox="0 0 26 24" fill="none"><rect x="1.5" y="6.5" width="19" height="11" rx="3" stroke="currentColor" stroke-width="1.5"/><rect x="3.5" y="8.5" width="14" height="7" rx="1.5" fill="currentColor"/><rect x="21.5" y="10" width="2" height="4" rx="1" fill="currentColor"/></svg>
+      </span>
+    </div>
+
+    <div class="app-body">
+
+      <!-- ====================== מסך בית ====================== -->
+      <section class="screen active" id="screen-home"></section>
+
+      <!-- ====================== מסך מפה ====================== -->
+      <section class="screen" id="screen-map">
+        <div class="map-full">
+          <div id="leaf"></div>
+          <div class="map-overlay-top">
+            <div class="day-filter" id="day-filter"></div>
+          </div>
+          <button class="locate-btn" id="locate-btn" aria-label="מצא אותי">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          </button>
+          <div class="maptoggle">
+            <button class="mt-btn on" id="tg-food"><span class="em">🍽️</span> אוכל מקומי</button>
+            <button class="mt-btn on" id="tg-attr"><span class="em">🏛️</span> אטרקציות</button>
+            <button class="mt-btn" id="tg-visited"><span class="em">📍</span> איפה הייתי</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================== מסך מסלול ====================== -->
+      <section class="screen" id="screen-trip"></section>
+
+      <!-- ====================== מסך יומן ====================== -->
+      <section class="screen" id="screen-journal"></section>
+
+      <!-- ====================== מסך תכנון ====================== -->
+      <section class="screen" id="screen-plan"></section>
+
+      <!-- טוסטים -->
+      <div class="toast-wrap" id="toast-wrap"></div>
+
+      <!-- Sheet פרטי אתר -->
+      <div class="scrim" id="scrim"></div>
+      <div class="sheet" id="sheet"></div>
+
+      <!-- מצב הליכה -->
+      <div class="walk" id="walk">
+        <div class="walk__map">
+          <div id="leaf-walk"></div>
+          <button class="walk__close" id="walk-close" aria-label="סגור">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <div class="walk__banner">
+            <div class="dir-ic" id="walk-dir-ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 20V5M5 12l7-7 7 7"/></svg>
+            </div>
+            <div>
+              <div class="ins" id="walk-ins">המשך ישר</div>
+              <div class="dist" id="walk-dist">200 מ' לפנייה הבאה</div>
+            </div>
+          </div>
+        </div>
+        <div class="walk__card">
+          <div class="walk__dest">
+            <span class="pin" id="walk-pin">1</span>
+            <div>
+              <div class="nm" id="walk-nm">היעד</div>
+              <div class="mt" id="walk-mt">בדרך אליך</div>
+            </div>
+          </div>
+          <div class="walk__stats">
+            <div class="walk__stat"><b id="walk-eta">7 דק'</b><small>זמן הגעה</small></div>
+            <div class="walk__stat"><b id="walk-left">550 מ'</b><small>מרחק שנותר</small></div>
+            <div class="walk__stat"><b id="walk-arrive">9:48</b><small>שעת הגעה</small></div>
+          </div>
+          <button class="btn btn--accent" id="walk-arrived">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            הגעתי ליעד
+          </button>
+        </div>
+      </div>
+
+      <!-- נגן סרטון רגעים -->
+      <div class="player-scrim" id="player-scrim"></div>
+      <div class="player" id="player">
+        <button class="player__close" id="player-close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <div class="player__stage" id="player-stage">
+          <div class="player__bars" id="player-bars"></div>
+          <div class="player__cap" id="player-cap"></div>
+        </div>
+        <div class="player__foot">
+          <span class="pf-t" id="player-title">סרטון רגעים</span>
+          <button class="share-btn" id="player-share"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg> שתף</button>
+        </div>
+      </div>
+
+      <!-- מסך פתיחה / ברכה -->
+      <div class="welcome" id="welcome">
+        <div class="welcome__confetti" id="confetti"></div>
+        <div class="welcome__crest">VIE · 2026</div>
+        <div class="welcome__hb">יום הולדת שמח</div>
+        <div class="welcome__name">שלומי</div>
+        <div class="welcome__cake">🎂</div>
+        <p class="welcome__msg">
+          מזל טוב, אהובי. זה הגיל שבו <b>מתחילים באמת לחיות</b> —
+          לטייל בעולם בדיוק כמו שתמיד חלמת. אז ארזתי לך את וינה כולה
+          לתוך הטלפון: ארמונות, אלפים, קפה ועוגות.
+          <br>באהבה, <b>יפעת</b> 💛
+        </p>
+        <button class="voice-btn playing" id="welcome-voice" data-voice="welcome">
+          <span class="eq"><i></i><i></i><i></i><i></i></span>
+          השמע את הברכה בקול של יפעת
+        </button>
+        <div class="welcome__spacer"></div>
+        <button class="welcome__cta" id="welcome-cta">יאללה, מתחילים לטייל ✈️</button>
+        <button class="welcome__skip" id="welcome-skip">דלג</button>
+      </div>
+
+    </div>
+
+    <!-- טאב בר -->
+    <nav class="tabbar">
+      <button class="tab active" data-screen="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>
+        בית
+      </button>
+      <button class="tab" data-screen="map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>
+        מפה
+      </button>
+      <button class="tab" data-screen="trip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="3.5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="3.5" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+        מסלול
+      </button>
+      <button class="tab" data-screen="journal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5a2 2 0 0 1 2-2h11l3 3v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+        יומן
+      </button>
+      <button class="tab" data-screen="plan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12l9-3 11-5-4 11-3 9-2-7z"/></svg>
+        תכנון
+      </button>
+    </nav>
+
+  </div>
+</div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<!-- native.js מוסיף יכולות נייטיב (אחסון, GPS, סטטוס-בר) וטוען את
+     image-slot.js, data.js, app.js, app-plan.js אחרי שחזור האחסון -->
+<script src="app/native.js"></script>
+</body>
+</html>

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-theme="vienna">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>אוסטריה בקפסולה — ברושור מסלול טיול לוינה</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&family=Assistant:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+<link rel="stylesheet" href="brochure/styles.css">
+</head>
+<body>
+
+<div class="sheet-stack">
+
+  <!-- ================= עמוד 1 · כריכה ================= -->
+  <section class="page cover" data-screen-label="כריכה">
+    <div class="page__inner">
+      <div class="cover__top">
+        <div>
+          <div class="eyebrow">מדריך ומסלול טיול מובנה</div>
+        </div>
+        <div class="cover__crest">VIE</div>
+      </div>
+
+      <div style="margin-top:54px;">
+        <h1 class="cover__title">אוסטריה<br><span class="accentword">בקפסולה</span></h1>
+        <div class="cover__sub">וינה והאלפים הווינאיים — מסלול בן ארבעה ימים</div>
+      </div>
+
+      <div class="cover__meta-row">
+        <div class="cover__meta"><span class="num">4</span><span class="lab">ימי טיול</span></div>
+        <div class="cover__meta"><span class="num">5</span><span class="lab">לילות</span></div>
+        <div class="cover__meta"><span class="num">11</span><span class="lab">אתרי מפתח</span></div>
+        <div class="cover__meta"><span class="num">קיץ <small>2026</small></span><span class="lab">עונת הטיול · לזוג</span></div>
+      </div>
+
+      <hr class="rule-double" style="margin:30px 0 0;">
+
+      <!-- תמצית ארבעת הימים -->
+      <div class="glance">
+        <div class="kicker" style="margin-bottom:12px;">תמצית המסלול במבט אחד</div>
+        <div class="glance__grid">
+          <div class="glance__day">
+            <div class="d-num">יום ١ · 01</div>
+            <div class="d-title">לב העיר ההיסטורי</div>
+            <div class="d-list">קתדרלת סטפנוס · גראבן וקרנטנרשטראסה · ארמון הופבורג · קפה סנטרל</div>
+          </div>
+          <div class="glance__day">
+            <div class="d-num">יום ٢ · 02</div>
+            <div class="d-title">ארמונות, שווקים ונוסטלגיה</div>
+            <div class="d-list">ארמון שנברון · שוק נאשמרקט · מריההילפר שטראסה · פראטר והגלגל הענק</div>
+          </div>
+          <div class="glance__day">
+            <div class="d-num">יום ٣ · 03</div>
+            <div class="d-title">מעל ומתחת לאדמה</div>
+            <div class="d-list">שמורת הוהה ואנד ומרפסת ה-Skywalk · מערת האגם זגרות</div>
+          </div>
+          <div class="glance__day">
+            <div class="d-num">יום ٤ · 04</div>
+            <div class="d-title">פסגות ורכבות היסטוריות</div>
+            <div class="d-list">זמרינג · רכבל להר הירשקוגל · מסלול "20 השילנג"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page__foot">
+      <span>אוסטריה בקפסולה</span>
+      <span><span class="dot">●</span>&nbsp;&nbsp;כריכה</span>
+    </div>
+  </section>
+
+  <!-- ================= עמוד 2 · מפת המסלול ================= -->
+  <section class="page page--doc" data-screen-label="מפת המסלול">
+    <div class="page__inner">
+      <div class="runhead">
+        <span class="runhead__title">אוסטריה בקפסולה</span>
+        <span class="runhead__meta">מפת המסלול</span>
+      </div>
+
+      <div class="sec-title">
+        <h2>מפת המסלול ונקודות הביקור</h2>
+        <span class="sec-rule"></span>
+      </div>
+      <p class="lede" style="margin-top:-6px;margin-bottom:18px;">
+        אחת-עשרה נקודות מפתח, ממוספרות לפי סדר הביקור. ימים 1–2 מתנהלים ברגל ובתחבורה
+        ציבורית בלב וינה; ימים 3–4 דורשים רכב ויוצאים דרומה אל האלפים הווינאיים.
+      </p>
+
+      <div class="map-wrap">
+        <div class="map-card">
+          <div class="map-card__head">
+            <span class="t">מרכז וינה · ימים 1–2</span>
+            <span class="s">נקודות 1–8</span>
+          </div>
+          <div id="map-city" class="leaflet-map"></div>
+        </div>
+        <div class="map-card">
+          <div class="map-card__head">
+            <span class="t">האלפים הווינאיים · ימים 3–4</span>
+            <span class="s">נקודות 9–11 · דרומית לוינה</span>
+          </div>
+          <div id="map-region" class="leaflet-map"></div>
+        </div>
+      </div>
+
+      <div class="legend" style="margin-top:22px;">
+        <div class="legend__group-title">יום 1 — לב העיר ההיסטורי</div>
+        <div class="legend__item"><span class="pin pin--sm">1</span><span><span class="nm">קתדרלת סטפנוס הקדוש</span><br><span class="meta">Stephansplatz</span></span></div>
+        <div class="legend__item"><span class="pin pin--sm">2</span><span><span class="nm">גראבן וקרנטנרשטראסה</span><br><span class="meta">רחובות הקנייה</span></span></div>
+        <div class="legend__item"><span class="pin pin--sm">3</span><span><span class="nm">ארמון הופבורג</span><br><span class="meta">Hofburg · מוזיאון סיסי</span></span></div>
+        <div class="legend__item"><span class="pin pin--sm">4</span><span><span class="nm">קפה סנטרל</span><br><span class="meta">קפה וינאי מסורתי</span></span></div>
+
+        <div class="legend__group-title">יום 2 — ארמונות, שווקים ונוסטלגיה</div>
+        <div class="legend__item"><span class="pin pin--sm">5</span><span><span class="nm">ארמון שנברון</span><br><span class="meta">Schönbrunn · גבעת הגלורייט</span></span></div>
+        <div class="legend__item"><span class="pin pin--sm">6</span><span><span class="nm">שוק נאשמרקט</span><br><span class="meta">Naschmarkt</span></span></div>
+        <div class="legend__item"><span class="pin pin--sm">7</span><span><span class="nm">מריההילפר שטראסה</span><br><span class="meta">מדרחוב קניות</span></span></div>
+        <div class="legend__item"><span class="pin pin--sm">8</span><span><span class="nm">פראטר — הגלגל הענק</span><br><span class="meta">Riesenrad</span></span></div>
+
+        <div class="legend__group-title">ימים 3–4 — האלפים הווינאיים</div>
+        <div class="legend__item"><span class="pin pin--sm">9</span><span><span class="nm">שמורת הוהה ואנד</span><br><span class="meta">Hohe Wand · Skywalk</span></span></div>
+        <div class="legend__item"><span class="pin pin--sm">10</span><span><span class="nm">מערת האגם זגרות</span><br><span class="meta">Seegrotte Hinterbrühl</span></span></div>
+        <div class="legend__item"><span class="pin pin--sm">11</span><span><span class="nm">זמרינג — הירשקוגל</span><br><span class="meta">Semmering · רכבל ומסילה</span></span></div>
+      </div>
+    </div>
+    <div class="page__foot">
+      <span>אוסטריה בקפסולה</span>
+      <span>02 &nbsp;<span class="dot">●</span></span>
+    </div>
+  </section>
+
+  <!-- ================= עמוד 3 · מסלול ימים 1–2 ================= -->
+  <section class="page page--doc" data-screen-label="מסלול ימים 1-2">
+    <div class="page__inner">
+      <div class="runhead">
+        <span class="runhead__title">אוסטריה בקפסולה</span>
+        <span class="runhead__meta">מסלול יומי · ימים 1–2</span>
+      </div>
+
+      <!-- יום 1 -->
+      <div class="day-block">
+        <div class="day-head">
+          <span class="day-tag">יום 01</span>
+          <span class="day-name">לב העיר ההיסטורי</span>
+          <span class="day-rule"></span>
+        </div>
+
+        <div class="stop">
+          <span class="pin">1</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">קתדרלת סטפנוס הקדוש</span>
+              <span class="stop__price">כניסה חופשית · מגדל ~€12–14 / ₪50–56</span>
+            </div>
+            <div class="stop__desc">הלב הגותי של וינה. כניסה לכנסייה, טיפוס למגדל הדרומי לתצפית גגות, וביקור בקטקומבות.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> כנסייה 9:00–11:30, 13:00–16:30 · מגדל 9:00–17:30</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 12h14M8 21l2-3M16 21l-2-3"/></svg><b>הגעה:</b> U1 / U3 תחנת Stephansplatz</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <span class="pin">2</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">גראבן וקרנטנרשטראסה</span>
+              <span class="stop__price">חופשי</span>
+            </div>
+            <div class="stop__desc">צירי הקנייה ההיסטוריים של וינה, עמוד המגפה הבארוקי וחזיתות יוגנדשטיל — בהליכה מהקתדרלה.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> חנויות 10:00–19:00 (סגור בראשון)</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><b>הגעה:</b> בהליכה מנקודה 1</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <span class="pin">3</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">ארמון הופבורג</span>
+              <span class="stop__price">~€35 / ₪140 לזוג</span>
+            </div>
+            <div class="stop__desc">מעון החורף הקיסרי של בית הבסבורג. דירות הקיסר, מוזיאון סיסי ואוסף הכלים הקיסריים.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> 9:00–17:30 (כניסה אחרונה 16:30)</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 12h14M8 21l2-3M16 21l-2-3"/></svg><b>הגעה:</b> U3 תחנת Herrengasse</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <span class="pin">4</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">קפה סנטרל</span>
+              <span class="stop__price">~€20–30 / ₪80–120 לזוג</span>
+            </div>
+            <div class="stop__desc">בית קפה וינאי אגדי תחת קמרונות אבן — אפלשטרודל וקפה מלאנז' לסיום היום.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> 8:00–21:00 (ראשון מ-10:00)</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><b>הגעה:</b> בהליכה מהופבורג</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- יום 2 -->
+      <div class="day-block">
+        <div class="day-head">
+          <span class="day-tag">יום 02</span>
+          <span class="day-name">ארמונות, שווקים ונוסטלגיה</span>
+          <span class="day-rule"></span>
+        </div>
+
+        <div class="stop">
+          <span class="pin">5</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">ארמון שנברון וגבעת הגלורייט</span>
+              <span class="stop__price">Grand Tour ~€60 / ₪240 לזוג</span>
+            </div>
+            <div class="stop__desc">מעון הקיץ הקיסרי, אתר מורשת עולמית. החדרים המפוארים, הגנים, והגלורייט עם נוף לעיר.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> 9:00–17:30 (קיץ עד 18:30) · גנים חופשיים</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 12h14M8 21l2-3M16 21l-2-3"/></svg><b>הגעה:</b> U4 תחנת Schönbrunn</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <span class="pin">6</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">שוק נאשמרקט</span>
+              <span class="stop__price">חופשי · אוכל לפי בחירה</span>
+            </div>
+            <div class="stop__desc">שוק האוכל הססגוני של וינה — דוכני גבינות, תבלינים, מזרח-תיכוני ובתי ביסטרו.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> ב'–ו' 6:00–18:30 · ש' עד 17:00 (סגור א')</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 12h14M8 21l2-3M16 21l-2-3"/></svg><b>הגעה:</b> U4 תחנת Kettenbrückengasse</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <span class="pin">7</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">מריההילפר שטראסה</span>
+              <span class="stop__price">חופשי</span>
+            </div>
+            <div class="stop__desc">מדרחוב הקניות הראשי והתוסס של וינה, מצוין להפוגה ולשיטוט בין רשתות ובתי קפה.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> 10:00–19:00 (סגור בראשון)</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 12h14M8 21l2-3M16 21l-2-3"/></svg><b>הגעה:</b> U3 תחנת Neubaugasse</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <span class="pin">8</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">פראטר והגלגל הענק</span>
+              <span class="stop__price">גלגל ~€28 / ₪112 לזוג</span>
+            </div>
+            <div class="stop__desc">פארק השעשועים ההיסטורי וסמלה של וינה — הגלגל הענק (Riesenrad) משנת 1897.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> הפארק תמיד פתוח · הגלגל 10:00–22:00</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 12h14M8 21l2-3M16 21l-2-3"/></svg><b>הגעה:</b> U1 / U2 תחנת Praterstern</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page__foot">
+      <span>אוסטריה בקפסולה</span>
+      <span>03 &nbsp;<span class="dot">●</span></span>
+    </div>
+  </section>
+
+  <!-- ================= עמוד 4 · מסלול ימים 3–4 ================= -->
+  <section class="page page--doc" data-screen-label="מסלול ימים 3-4">
+    <div class="page__inner">
+      <div class="runhead">
+        <span class="runhead__title">אוסטריה בקפסולה</span>
+        <span class="runhead__meta">מסלול יומי · ימים 3–4</span>
+      </div>
+
+      <!-- יום 3 -->
+      <div class="day-block">
+        <div class="day-head">
+          <span class="day-tag">יום 03</span>
+          <span class="day-name">מעל ומתחת לאדמה</span>
+          <span class="day-rule"></span>
+        </div>
+
+        <div class="stop">
+          <span class="pin">9</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">שמורת הוהה ואנד — מרפסת ה-Skywalk</span>
+              <span class="stop__price">רכב + נוסעים ~€10–12 / ₪40–48</span>
+            </div>
+            <div class="stop__desc">רמה הררית מיוערת מעל 1,000 מ'. מרפסת מתכת תלויה מעל תהום, מסלולי הליכה ופונדקי הרים.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> השמורה פתוחה בשעות אור (מומלץ בוקר)</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0Zm10 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z"/><path d="M5 17V7l9-2 4 4v8"/></svg><b>הגעה:</b> ~55 דק' ברכב דרומה (כביש A2)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <span class="pin">10</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">מערת האגם זגרות</span>
+              <span class="stop__price">סיור + שיט ~€36 / ₪144 לזוג</span>
+            </div>
+            <div class="stop__desc">האגם התת-קרקעי הגדול באירופה. סיור במכרה הגבס ושיט חשמלי שקט במים המוארים (כ-9°C — קחו מעיל).</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> סיורים יומיים ~9:00–17:00 (קיץ)</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0Zm10 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z"/><path d="M5 17V7l9-2 4 4v8"/></svg><b>הגעה:</b> ~25 דק' ברכב מדרום וינה (הינטרברול)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- יום 4 -->
+      <div class="day-block">
+        <div class="day-head">
+          <span class="day-tag">יום 04</span>
+          <span class="day-name">פסגות ורכבות היסטוריות</span>
+          <span class="day-rule"></span>
+        </div>
+
+        <div class="stop">
+          <span class="pin">11</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">זמרינג — רכבל להר הירשקוגל</span>
+              <span class="stop__price">רכבל הלוך-חזור ~€44 / ₪176 לזוג</span>
+            </div>
+            <div class="stop__desc">עיירת נופש אלפינית היסטורית. רכבל לפסגת הירשקוגל לתצפיות נוף וארוחה בבקתת עץ הררית.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> רכבל ~9:00–16:30</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0Zm10 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z"/><path d="M5 17V7l9-2 4 4v8"/></svg><b>הגעה:</b> ~1:20 ש' ברכב (S6) או ברכבת הנופית</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <span class="pin" style="background:var(--accent)">★</span>
+          <div>
+            <div class="stop__head">
+              <span class="stop__name">מסלול "20 השילנג" ומסילת זמרינג</span>
+              <span class="stop__price">חופשי</span>
+            </div>
+            <div class="stop__desc">מסלול הליכה קליל ביער המשקיף על גשרי האבן והמנהרות של מסילת הרכבת ההררית הראשונה בעולם — אתר מורשת עולמית של אונסק"ו.</div>
+            <div class="stop__facts">
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>שעות:</b> כל שעות היום</span>
+              <span class="fact"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><b>הגעה:</b> בהליכה מתחנת זמרינג</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip" style="margin-top:14px;">
+        <span class="pin pin--sm" style="background:var(--accent)">i</span>
+        <span><b>טיפ ניווט:</b> לימים 3–4 אספו את הרכב מתחנה עירונית בווינה (כמו Westbahnhof) ולא משדה התעופה — חיסכון משמעותי בעמלות. אל תשכחו מדבקת כביש (Vignette) לכבישים המהירים באוסטריה.</span>
+      </div>
+    </div>
+    <div class="page__foot">
+      <span>אוסטריה בקפסולה</span>
+      <span>04 &nbsp;<span class="dot">●</span></span>
+    </div>
+  </section>
+
+  <!-- ================= עמוד 5 · עלויות ================= -->
+  <section class="page page--doc" data-screen-label="עלויות">
+    <div class="page__inner">
+      <div class="runhead">
+        <span class="runhead__title">אוסטריה בקפסולה</span>
+        <span class="runhead__meta">אומדן עלויות · לזוג</span>
+      </div>
+
+      <div class="sec-title">
+        <h2>אומדן עלויות לטיול</h2>
+        <span class="sec-rule"></span>
+      </div>
+      <p class="lede" style="margin-top:-6px;margin-bottom:20px;">
+        אומדן ריאלי לזוג, ברמת תקציב ביניים פלוס (Mid-Range+). אינו כולל טיסות וארוחות.
+        המרה משוערת: €1 ≈ ₪4.0.
+      </p>
+
+      <div class="cost-grid">
+        <div class="cost-card">
+          <div class="cost-card__t"><span class="pin pin--sm">🛏</span>לינה · 5 לילות</div>
+          <div class="cost-card__amt">€650–900 <small>/ ₪2,600–3,600</small></div>
+          <div class="cost-card__note">מלונות 3–4★ מרכזיים (כ-€130–180 ללילה לחדר זוגי), ברובע 2 או 7 בקרבת הרכבת התחתית.</div>
+        </div>
+        <div class="cost-card">
+          <div class="cost-card__t"><span class="pin pin--sm">🚆</span>תחבורה ורכב</div>
+          <div class="cost-card__amt">€140–200 <small>/ ₪560–800</small></div>
+          <div class="cost-card__note">כרטיס 48 ש' לזוג ~€28 · השכרת רכב ליומיים ~€70–120 · דלק ו-Vignette ~€40.</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:18px;margin:26px 0 6px;">כניסות לאתרים ואטרקציות · לזוג</h3>
+      <table class="cost-table">
+        <thead>
+          <tr><th>אתר</th><th style="text-align:end">עלות (€)</th><th style="text-align:end">עלות (₪)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>קתדרלת סטפנוס — מגדל תצפית</td><td class="num">€12–14</td><td class="num">₪50–56</td></tr>
+          <tr><td>ארמון הופבורג — דירות הקיסר ומוזיאון סיסי</td><td class="num">€35</td><td class="num">₪140</td></tr>
+          <tr><td>ארמון שנברון — Grand Tour</td><td class="num">€60</td><td class="num">₪240</td></tr>
+          <tr><td>הגלגל הענק בפראטר</td><td class="num">€28</td><td class="num">₪112</td></tr>
+          <tr><td>שמורת הוהה ואנד — כניסת רכב ונוסעים</td><td class="num">€10–12</td><td class="num">₪40–48</td></tr>
+          <tr><td>מערת האגם זגרות — סיור ושיט</td><td class="num">€36</td><td class="num">₪144</td></tr>
+          <tr><td>רכבל זמרינג — הלוך-חזור</td><td class="num">€44</td><td class="num">₪176</td></tr>
+          <tr class="total"><td>סך כניסות מתוכננות</td><td class="num">~€225–250</td><td class="num">~₪900–1,000</td></tr>
+        </tbody>
+      </table>
+
+      <h3 style="font-size:18px;margin:28px 0 6px;">סיכום כולל מוערך · לזוג</h3>
+      <table class="cost-table">
+        <tbody>
+          <tr><td>לינה (5 לילות)</td><td class="num">€650–900</td><td class="num">₪2,600–3,600</td></tr>
+          <tr><td>תחבורה והשכרת רכב</td><td class="num">€140–200</td><td class="num">₪560–800</td></tr>
+          <tr><td>כניסות ואטרקציות</td><td class="num">€225–250</td><td class="num">₪900–1,000</td></tr>
+          <tr class="total"><td>סך הכל (ללא טיסות ואוכל)</td><td class="num">€1,015–1,350</td><td class="num">₪4,060–5,400</td></tr>
+        </tbody>
+      </table>
+
+      <div class="tip" style="margin-top:22px;">
+        <span class="pin pin--sm" style="background:var(--accent)">i</span>
+        <span><b>חיסכון:</b> רכישת כרטיסים לשנברון ולהופבורג מראש באתרים הרשמיים חוסכת זמן בתורים. כרטיס Vienna City Card עשוי להשתלם אם תרבו בנסיעות בתחבורה הציבורית.</span>
+      </div>
+    </div>
+    <div class="page__foot">
+      <span>אוסטריה בקפסולה</span>
+      <span>05 &nbsp;<span class="dot">●</span></span>
+    </div>
+  </section>
+
+  <!-- ================= עמוד 6 · נספח אתרים א' ================= -->
+  <section class="page page--doc" data-screen-label="נספח א">
+    <div class="page__inner">
+      <div class="runhead">
+        <span class="runhead__title">אוסטריה בקפסולה</span>
+        <span class="runhead__meta">נספח אתרים מורחב · א'</span>
+      </div>
+
+      <div class="sec-title">
+        <h2>נספח אתרים מורחב</h2>
+        <span class="sec-rule"></span>
+      </div>
+
+      <div class="appendix-item">
+        <div class="appendix-item__head">
+          <span class="pin">1</span>
+          <div>
+            <div class="appendix-item__name">קתדרלת סטפנוס הקדוש</div>
+            <div class="appendix-item__lat">St. Stephen's Cathedral · "שטפל"</div>
+          </div>
+        </div>
+        <div class="appendix-item__body">
+          הקתדרלה הגותית המרשימה היא הלב הגיאוגרפי והרוחני של וינה מאז המאה ה-12. המבנה ניצל בנס מהרס מוחלט בשלהי מלחמת העולם השנייה ושוקם בצורה מופלאה. סימן ההיכר הבולט שלה הוא גג הרעפים הצבעוני, המורכב ממעל ל-230,000 רעפים היוצרים את סמל הנשר הדו-ראשי הקיסרי.
+        </div>
+        <div class="appendix-item__do">
+          <b>מה עושים שם?</b> נכנסים פנימה להתרשם מעמודי האבן והוויטראז'ים, מטפסים ב-343 מדרגות המגדל הדרומי (או מעלית בצפוני) לתצפית פנורמית על גגות העיר, ויורדים לקטקומבות ההיסטוריות שמתחת לכנסייה.
+        </div>
+      </div>
+
+      <div class="appendix-item">
+        <div class="appendix-item__head">
+          <span class="pin">5</span>
+          <div>
+            <div class="appendix-item__name">ארמון שנברון</div>
+            <div class="appendix-item__lat">Schönbrunn Palace · אתר מורשת עולמית</div>
+          </div>
+        </div>
+        <div class="appendix-item__body">
+          מעון הקיץ הרשמי של שושלת הבסבורג הקיסרית, צבוע כולו ב"צהוב שנברון" המפורסם. הארמון הבארוקי כולל 1,441 חדרים, מתוכם עשרות פתוחים לקהל — בהם חדרי המגורים המקוריים של הקיסר פרנץ יוזף ושל הקיסרית סיסי.
+        </div>
+        <div class="appendix-item__do">
+          <b>מה עושים שם?</b> סיור בחדרים המפוארים (מסלול Grand Tour), שיטוט בגנים עם המזרקות והמבוך, וטיפוס קל אל הגלורייט — מבנה קשתות מפואר בראש הגן ובו בית קפה עם נוף פראי על הארמון והעיר.
+        </div>
+      </div>
+
+      <div class="appendix-item">
+        <div class="appendix-item__head">
+          <span class="pin">9</span>
+          <div>
+            <div class="appendix-item__name">שמורת הטבע הוהה ואנד</div>
+            <div class="appendix-item__lat">Hohe Wand Nature Park</div>
+          </div>
+        </div>
+        <div class="appendix-item__body">
+          רמה הררית מיוערת המתנשאת לגובה של מעל 1,000 מטרים באזור האלפים הווינאיים, פחות משעה מהבירה. השמורה פופולרית בזכות צוקי הגיר הזקופים, יערות האורן ומגוון בעלי החיים המשוטטים בה בחופשיות, כולל יעלים ואיילים.
+        </div>
+        <div class="appendix-item__do">
+          <b>מה עושים שם?</b> גולת הכותרת היא מרפסת התצפית התלויה "Skywalk", הבולטת מהצוק מעל תהום של מאות מטרים. בשמורה עשרות מסלולי הליכה קלים, פארק חיות קטן לילדים, ופונדקי הרים אוסטריים מסורתיים.
+        </div>
+      </div>
+    </div>
+    <div class="page__foot">
+      <span>אוסטריה בקפסולה</span>
+      <span>06 &nbsp;<span class="dot">●</span></span>
+    </div>
+  </section>
+
+  <!-- ================= עמוד 7 · נספח אתרים ב' ================= -->
+  <section class="page page--doc" data-screen-label="נספח ב">
+    <div class="page__inner">
+      <div class="runhead">
+        <span class="runhead__title">אוסטריה בקפסולה</span>
+        <span class="runhead__meta">נספח אתרים מורחב · ב'</span>
+      </div>
+
+      <div class="appendix-item" style="padding-top:6px;">
+        <div class="appendix-item__head">
+          <span class="pin">10</span>
+          <div>
+            <div class="appendix-item__name">מערת האגם זגרות</div>
+            <div class="appendix-item__lat">Seegrotte Hinterbrühl</div>
+          </div>
+        </div>
+        <div class="appendix-item__body">
+          פלא תת-קרקעי ייחודי. המקום החל כמכרה גבס במאה ה-19, עד שפיצוץ בשנת 1912 גרם להצפה מסיבית שיצרה את האגם התת-קרקעי הגדול באירופה (כ-6,200 מ"ר). במלחמת העולם השנייה הוקם במערה מפעל סודי לייצור חלקי מטוסים.
+        </div>
+        <div class="appendix-item__do">
+          <b>מה עושים שם?</b> יורדים לעומק דרך מנהרות קרירות (כ-9°C כל השנה — קחו לבוש חם), עוברים בין אולמות המכרה ושרידי המפעל ההיסטורי, וחותמים בשיוט שקט בסירת מנוע חשמלית על המים הצלולים המוארים בתאורה דרמטית.
+        </div>
+      </div>
+
+      <div class="appendix-item">
+        <div class="appendix-item__head">
+          <span class="pin">11</span>
+          <div>
+            <div class="appendix-item__name">עיירת הנופש זמרינג</div>
+            <div class="appendix-item__lat">Semmering · מסילת מורשת עולמית</div>
+          </div>
+        </div>
+        <div class="appendix-item__body">
+          עיירת נופש אלפינית היסטורית שמשכה כבר במאה ה-19 את האריסטוקרטיה הווינאית, ויעד סקי נחשק בחורף. פרסומה מגיע בזכות מסילת זמרינג — מסילת הרכבת ההררית הראשונה בעולם, שנבנתה כנגד כל הסיכויים ההנדסיים והוכרזה כאתר מורשת עולמית של אונסק"ו.
+        </div>
+        <div class="appendix-item__do">
+          <b>מה עושים שם?</b> עולים ברכבל אל פסגת הירשקוגל לתצפיות וארוחה בבקתת עץ, ויוצאים למסלול "20 השילנג" הקליל — שביל יער המוביל לנקודות תצפית מושלמות על גשרי האבן והמנהרות של הרכבת ההיסטורית.
+        </div>
+      </div>
+
+      <hr class="rule-double" style="margin:28px 0;">
+
+      <div style="display:flex;gap:30px;align-items:flex-start;">
+        <div style="flex:1;">
+          <div class="kicker" style="margin-bottom:8px;">לפני שיוצאים לדרך</div>
+          <p class="lede" style="font-size:12.5px;margin:0;">
+            השעות והמחירים בברושור הם הערכה נכונה לעונת הקיץ ועשויים להשתנות — מומלץ לאמת באתרים
+            הרשמיים סמוך לנסיעה ולשריין מראש כרטיסים לאתרים המרכזיים. נסיעה טובה!
+          </p>
+        </div>
+        <div class="cover__crest" style="width:64px;height:64px;font-size:18px;">VIE</div>
+      </div>
+    </div>
+    <div class="page__foot">
+      <span>אוסטריה בקפסולה · וינה והאלפים הווינאיים</span>
+      <span>07 &nbsp;<span class="dot">●</span></span>
+    </div>
+  </section>
+
+</div>
+
+<!-- ================= Leaflet + מפה ================= -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="brochure/map.js"></script>
+
+<!-- ================= Tweaks ================= -->
+<div class="tweak-host"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="brochure/tweaks.jsx"></script>
+
+</body>
+</html>
