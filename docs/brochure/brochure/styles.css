@@ -1,0 +1,519 @@
+/* ===========================================================
+   אוסטריה בקפסולה — ברושור מסלול טיול | מערכת עיצוב
+   =========================================================== */
+
+:root {
+  /* ----- ערכת "וינאי קלאסי" (ברירת מחדל) ----- */
+  --paper:    #f3ece0;
+  --paper-2:  #eae0cd;
+  --card:     #fbf8f1;
+  --ink:      #2a2320;
+  --ink-soft: #4d4239;
+  --muted:    #877867;
+  --primary:  #7a1f2b;  /* בורדו */
+  --primary-2:#5d141d;
+  --accent:   #b0832f;  /* אוקר זהוב */
+  --accent-2: #d8c08a;
+  --line:     rgba(42, 35, 32, 0.14);
+  --line-2:   rgba(42, 35, 32, 0.28);
+  --marker:   #7a1f2b;
+  --marker-ink:#fff;
+  --map-frame:#fff;
+  --shadow:   0 22px 60px -28px rgba(42,25,20,.45);
+
+  --serif: Calibri, Carlito, "Assistant", "Segoe UI", system-ui, sans-serif;
+  --sans:  Calibri, Carlito, "Assistant", "Segoe UI", system-ui, sans-serif;
+}
+
+[data-theme="navy"] {
+  --paper:    #0e2238;
+  --paper-2:  #0b1b2c;
+  --card:     #14324f;
+  --ink:      #eef3f9;
+  --ink-soft: #cdd9e6;
+  --muted:    #92a6bd;
+  --primary:  #cda353;  /* זהב קיסרי */
+  --primary-2:#e2bf75;
+  --accent:   #7fa8d8;
+  --accent-2: #b9d0ea;
+  --line:     rgba(255, 255, 255, 0.16);
+  --line-2:   rgba(255, 255, 255, 0.30);
+  --marker:   #cda353;
+  --marker-ink:#10243b;
+  --map-frame:#0b1b2c;
+  --shadow:   0 22px 60px -26px rgba(0,0,0,.7);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background:
+    radial-gradient(120% 80% at 50% -10%, var(--paper) 0%, var(--paper-2) 100%);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  direction: rtl;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ====================== עמוד A4 ====================== */
+.sheet-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  padding: 40px 16px 90px;
+}
+
+.page {
+  position: relative;
+  width: 794px;
+  min-height: 1123px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.page__inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 58px 60px 52px;
+}
+
+/* קו דק כפול עליון לכל עמוד פנימי */
+.page--doc .page__inner { padding-top: 46px; }
+
+/* ====================== טיפוגרפיה ====================== */
+h1, h2, h3, h4 { font-family: var(--serif); font-weight: 800; margin: 0; line-height: 1.12; }
+
+.eyebrow {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.kicker {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: .04em;
+  color: var(--primary);
+}
+
+p { margin: 0 0 .7em; }
+.lede { color: var(--ink-soft); }
+
+/* ====================== כותרת עליונה רצה ====================== */
+.runhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 26px;
+  border-bottom: 1.5px solid var(--line-2);
+}
+.runhead .runhead__title {
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--ink);
+}
+.runhead .runhead__meta {
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* קו זוגי דקורטיבי */
+.rule-double {
+  border: 0;
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
+  height: 3px;
+  margin: 0;
+}
+
+/* ====================== כריכה ====================== */
+.cover {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.04) 100%);
+}
+.cover__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.cover__crest {
+  width: 56px; height: 56px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--primary);
+}
+.cover__title {
+  font-size: 74px;
+  line-height: .98;
+  letter-spacing: -0.01em;
+  margin-top: 6px;
+}
+.cover__title .accentword { color: var(--primary); font-style: italic; }
+.cover__sub {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-style: italic;
+  font-size: 25px;
+  color: var(--ink-soft);
+  margin-top: 14px;
+}
+.cover__meta-row {
+  display: flex;
+  gap: 26px;
+  margin-top: 26px;
+  flex-wrap: wrap;
+}
+.cover__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cover__meta .num {
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: 34px;
+  color: var(--ink);
+  line-height: 1;
+}
+.cover__meta .lab {
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+.cover__meta .num small { font-size: 16px; color: var(--muted); font-weight: 700; }
+
+/* רצועת ימים בכריכה */
+.glance {
+  margin-top: auto;
+}
+.glance__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.glance__day {
+  padding: 18px 16px 20px;
+  border-inline-start: 1px solid var(--line);
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,.012));
+}
+.glance__day:first-child { border-inline-start: 0; }
+.glance__day .d-num {
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: .12em;
+}
+.glance__day .d-title {
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: 17px;
+  margin-top: 6px;
+  line-height: 1.15;
+}
+.glance__day .d-list {
+  margin-top: 9px;
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ====================== מקרא / נקודות ממוספרות ====================== */
+.pin {
+  display: inline-grid;
+  place-items: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--marker);
+  color: var(--marker-ink);
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+.pin--sm { width: 18px; height: 18px; font-size: 10.5px; }
+
+/* ====================== מפה ====================== */
+.map-wrap {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+.map-card {
+  border: 1px solid var(--line-2);
+  background: var(--map-frame);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.map-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+}
+.map-card__head .t { font-family: var(--serif); font-weight: 800; font-size: 15px; }
+.map-card__head .s { font-size: 11px; color: var(--muted); letter-spacing:.08em; white-space: nowrap; }
+.leaflet-map { width: 100%; }
+#map-city { height: 360px; }
+#map-region { height: 250px; }
+
+/* מרקר ממוספר על המפה */
+.num-marker {
+  display: grid; place-items: center;
+  width: 26px; height: 26px;
+  border-radius: 50% 50% 50% 2px;
+  transform: rotate(45deg);
+  background: var(--marker);
+  border: 2px solid var(--map-frame);
+  box-shadow: 0 3px 8px rgba(0,0,0,.35);
+}
+.num-marker span {
+  transform: rotate(-45deg);
+  color: var(--marker-ink);
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 12.5px;
+}
+
+/* מקרא */
+.legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 26px;
+}
+.legend__group-title {
+  grid-column: 1 / -1;
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--primary);
+  margin-top: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.legend__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 12.5px;
+}
+.legend__item .nm { font-weight: 600; color: var(--ink); }
+.legend__item .meta { color: var(--muted); font-size: 11px; }
+
+/* ====================== מסלול יומי ====================== */
+.day-block { margin-bottom: 22px; }
+.day-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.day-head .day-tag {
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: .14em;
+  color: var(--marker-ink);
+  background: var(--primary);
+  padding: 5px 12px;
+  border-radius: 2px;
+}
+.day-head .day-name { font-family: var(--serif); font-weight: 800; font-size: 22px; }
+.day-head .day-rule { flex: 1; height: 1px; background: var(--line-2); }
+
+.stop {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.stop:last-child { border-bottom: 0; }
+.stop__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.stop__name { font-family: var(--serif); font-weight: 800; font-size: 16px; }
+.stop__price {
+  margin-inline-start: auto;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--primary);
+  white-space: nowrap;
+}
+.stop__desc { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+.stop__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 7px;
+}
+.fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.fact b { color: var(--ink-soft); font-weight: 700; }
+.fact .ic {
+  width: 13px; height: 13px; flex: 0 0 auto;
+  color: var(--accent);
+}
+
+/* ====================== עלויות ====================== */
+.cost-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.cost-card {
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 18px 20px;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,.012));
+}
+.cost-card__t {
+  display: flex; align-items: center; gap: 9px;
+  font-family: var(--serif); font-weight: 800; font-size: 16px;
+  margin-bottom: 4px;
+}
+.cost-card__amt {
+  font-family: var(--serif); font-weight: 800; font-size: 26px; color: var(--primary);
+}
+.cost-card__amt small { font-size: 14px; color: var(--muted); font-weight: 700; }
+.cost-card__note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
+.cost-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.cost-table th, .cost-table td {
+  text-align: start;
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12.5px;
+}
+.cost-table th {
+  font-family: var(--sans); font-weight: 700; color: var(--muted);
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+}
+.cost-table td.num { font-weight: 700; text-align: end; white-space: nowrap; }
+.cost-table tr.total td {
+  border-bottom: 0;
+  border-top: 2px solid var(--line-2);
+  font-family: var(--serif); font-weight: 800; font-size: 15px;
+  padding-top: 12px;
+}
+.cost-table tr.total td.num { color: var(--primary); font-size: 17px; }
+
+.tip {
+  display: flex; gap: 11px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: 2px;
+  background: rgba(176,131,47,.06);
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.tip b { color: var(--ink); }
+
+/* ====================== נספח ====================== */
+.appendix-item {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.appendix-item:last-child { border-bottom: 0; }
+.appendix-item__head {
+  display: flex; align-items: center; gap: 12px;
+}
+.appendix-item__head .pin { width: 26px; height: 26px; font-size: 13px; }
+.appendix-item__name { font-family: var(--serif); font-weight: 800; font-size: 20px; }
+.appendix-item__lat { font-size: 11.5px; color: var(--muted); font-style: italic; }
+.appendix-item__body { font-size: 13px; color: var(--ink-soft); line-height: 1.62; }
+.appendix-item__do {
+  font-size: 12.5px; color: var(--ink-soft);
+  border-inline-start: 2px solid var(--accent-2);
+  padding-inline-start: 12px;
+  margin-top: 2px;
+}
+.appendix-item__do b { color: var(--primary); }
+
+/* ====================== פוטר ====================== */
+.page__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 60px 22px;
+  font-size: 10.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+.page__foot .dot { color: var(--accent); }
+
+/* ====================== כללי עזר ====================== */
+.flow { display: flex; flex-direction: column; }
+.mt-auto { margin-top: auto; }
+.two-col { columns: 2; column-gap: 30px; }
+.sec-title {
+  display: flex; align-items: baseline; gap: 12px;
+  margin-bottom: 16px;
+}
+.sec-title h2 { font-size: 30px; }
+.sec-title .sec-rule { flex:1; height:1px; background: var(--line-2); }
+
+/* ====================== הדפסה ====================== */
+@page { size: A4; margin: 0; }
+@media print {
+  body { background: #fff; }
+  .sheet-stack { gap: 0; padding: 0; }
+  .page {
+    box-shadow: none;
+    width: 210mm;
+    min-height: 297mm;
+    break-after: page;
+    page-break-after: always;
+  }
+  .page:last-child { break-after: auto; page-break-after: auto; }
+  .tweak-host { display: none !important; }
+}

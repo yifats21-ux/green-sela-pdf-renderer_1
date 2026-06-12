@@ -1,0 +1,19 @@
+{
+  "name": "וינה לשלומי — מתנת יום הולדת",
+  "short_name": "וינה לשלומי",
+  "description": "מדריך טיול אישי וחי ל-4 ימים בווינה — מתנת יום הולדת",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#5d141d",
+  "theme_color": "#7a1f2b",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-1024.png", "sizes": "1024x1024", "type": "image/png" }
+  ]
+}
