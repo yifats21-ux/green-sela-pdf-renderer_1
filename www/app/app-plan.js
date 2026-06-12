@@ -115,29 +115,95 @@
     const base = new Date(start + "T00:00:00");
     return T.days.map((d, i) => { const dt = new Date(base); dt.setDate(base.getDate() + i); return dt.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" }); });
   }
+  let tripEdit = false; // מצב עריכת מסלול
+
+  function editedRoute() {
+    const ed = A.routeEdits();
+    return Object.keys(ed.day).length || Object.keys(ed.order).length || ed.skip.length;
+  }
+  function normalizeDayOrder(ed, day) {
+    // לפי הסדר האפקטיבי (ord), לא לפי מיקום במערך — שעדיין לא מוין מחדש
+    A.dayAllStops(day).slice().sort((a, b) => a.ord - b.ord).forEach((s, i) => { ed.order[s.n] = day * 100 + i; });
+  }
+  function afterRouteEdit() { window.renderTrip(); window.renderHome(); }
+
+  function moveStop(n, dir) {
+    const s = A.siteByN(n), ed = A.routeEdits();
+    const list = A.dayAllStops(s.day);
+    const i = list.indexOf(s), j = i + dir;
+    if (j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    list.forEach((x, k) => { ed.order[x.n] = s.day * 100 + k; });
+    A.setRouteEdits(ed); afterRouteEdit();
+  }
+  function moveStopToDay(n, day) {
+    const s = A.siteByN(n); if (s.day === day) return;
+    if (!s.skip && A.dayStops(s.day).length <= 1) {
+      A.toast("⚠️", "אי אפשר", "חייבת להישאר לפחות תחנה אחת בכל יום."); afterRouteEdit(); return;
+    }
+    const from = s.day, ed = A.routeEdits();
+    if (day === s.day0) delete ed.day[n]; else ed.day[n] = day;
+    s.day = day; s.ord = day * 100 + 99; // זמני, לצורך נרמול — לסוף היום החדש
+    normalizeDayOrder(ed, day); normalizeDayOrder(ed, from);
+    A.setRouteEdits(ed);
+    A.toast("📅", "התחנה הועברה", `"${s.name}" עברה ליום ${day}.`);
+    afterRouteEdit();
+  }
+  function toggleSkip(n) {
+    const s = A.siteByN(n), ed = A.routeEdits();
+    if (!s.skip && A.dayStops(s.day).length <= 1) {
+      A.toast("⚠️", "אי אפשר", "חייבת להישאר לפחות תחנה אחת בכל יום."); return;
+    }
+    ed.skip = s.skip ? ed.skip.filter(x => x !== n) : ed.skip.concat([n]);
+    A.setRouteEdits(ed);
+    A.toast(s.skip ? "↩️" : "🚫", s.skip ? "התחנה חזרה למסלול" : "מדלגים על התחנה", `"${s.name}"`);
+    afterRouteEdit();
+  }
+
   window.renderTrip = function () {
     const dates = tripDates();
     $("#screen-trip").innerHTML = `
-      <div class="scr-head"><div class="scr-kicker">4 ימים · 11 אתרים</div><h1 class="scr-title">המסלול שלך</h1>
-        <div class="scr-sub">${dates ? "התאריכים שובצו — ההתראות פעילות" : "קבע תאריכים אמיתיים בלשונית ‹תכנון›"}</div></div>
+      <div class="scr-head trip-head"><div>
+        <div class="scr-kicker">4 ימים · 11 אתרים</div><h1 class="scr-title">המסלול שלך</h1>
+        <div class="scr-sub">${tripEdit ? "סדרו מחדש, העבירו בין ימים או דלגו על תחנות" : dates ? "התאריכים שובצו — ההתראות פעילות" : "קבע תאריכים אמיתיים בלשונית ‹תכנון›"}</div></div>
+        <button class="btn btn--ghost btn--sm trip-edit-btn ${tripEdit ? "on" : ""}" id="trip-edit-btn">${tripEdit ? "✓ סיום" : "✏️ ערוך"}</button>
+      </div>
       ${T.days.map(d => {
-        const stops = A.dayStops(d.id);
+        const stops = tripEdit ? A.dayAllStops(d.id) : A.dayStops(d.id);
+        const walkable = A.dayStops(d.id);
         return `
         <div class="section-label" style="display:flex;align-items:center;gap:9px">
           <span class="daychip" style="background:${d.color}">יום ${d.id}</span>${d.title} ${dates ? `· <span style="color:var(--ink-soft)">${dates[d.id - 1]}</span>` : ""}
         </div>
         <div class="card"><div class="row-list">
           ${stops.map(s => `
-            <div class="ri" data-site="${s.n}">
+            <div class="ri ${s.skip ? "skip" : ""}" ${tripEdit ? "" : `data-site="${s.n}"`}>
               <span class="pin sm" style="background:${d.color};position:relative">${s.n}${A.isVisited("s" + s.n) ? `<span class="visited-badge">${IC.check}</span>` : ""}</span>
-              <div><div class="nm">${s.name}</div><div class="mt">${s.hours.split("·")[0]}</div></div>
-              <span class="time">${s.price.replace("לזוג", "").trim()}</span>${IC.chev}
+              <div><div class="nm">${s.name}</div><div class="mt">${s.skip ? "בדילוג — לא במסלול" : s.hours.split("·")[0]}</div></div>
+              ${tripEdit ? `
+              <span class="edit-ctl">
+                <button data-up="${s.n}" aria-label="העלה">↑</button>
+                <button data-down="${s.n}" aria-label="הורד">↓</button>
+                <select data-dayof="${s.n}" aria-label="העבר ליום">${T.days.map(x => `<option value="${x.id}" ${x.id === s.day ? "selected" : ""}>יום ${x.id}</option>`).join("")}</select>
+                <button data-skip="${s.n}" aria-label="${s.skip ? "החזר למסלול" : "דלג"}">${s.skip ? "↩" : "✕"}</button>
+              </span>` : `
+              <span class="time">${s.price.replace("לזוג", "").trim()}</span>${IC.chev}`}
             </div>`).join("")}
         </div>
-        <button class="btn btn--ghost btn--sm" style="margin-top:13px;width:100%" data-walk="${stops[0].n}">${IC.nav} צא למסלול היום</button></div>`;
-      }).join("")}<div style="height:6px"></div>`;
+        ${walkable.length && !tripEdit ? `<button class="btn btn--ghost btn--sm" style="margin-top:13px;width:100%" data-walk="${walkable[0].n}">${IC.nav} צא למסלול היום</button>` : ""}</div>`;
+      }).join("")}
+      ${tripEdit && editedRoute() ? `<button class="btn btn--ghost btn--sm" style="width:100%;margin-top:4px" id="trip-reset">↺ אפס מסלול לברירת המחדל</button>` : ""}
+      <div style="height:6px"></div>`;
+
+    $("#trip-edit-btn").addEventListener("click", () => { tripEdit = !tripEdit; window.renderTrip(); if (!tripEdit) A.toast("✓", "המסלול נשמר", "השינויים שלך נשמרו במכשיר."); });
+    const reset = $("#trip-reset");
+    if (reset) reset.addEventListener("click", () => { A.clearRouteEdits(); afterRouteEdit(); A.toast("↺", "המסלול אופס", "חזרנו למסלול המקורי של יפעת."); });
     $$("#screen-trip [data-site]").forEach(b => b.addEventListener("click", () => A.openSheet(+b.dataset.site)));
     $$("#screen-trip [data-walk]").forEach(b => b.addEventListener("click", () => A.openWalk(+b.dataset.walk)));
+    $$("#screen-trip [data-up]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); moveStop(+b.dataset.up, -1); }));
+    $$("#screen-trip [data-down]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); moveStop(+b.dataset.down, 1); }));
+    $$("#screen-trip [data-skip]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); toggleSkip(+b.dataset.skip); }));
+    $$("#screen-trip [data-dayof]").forEach(sel => sel.addEventListener("change", () => moveStopToDay(+sel.dataset.dayof, +sel.value)));
   };
 
   /* =====================================================

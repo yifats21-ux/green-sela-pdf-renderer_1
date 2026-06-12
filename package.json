@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "start": "npx http-server www -p 8080",
+    "test": "node test/route-edit.test.js",
     "sync": "cap sync",
     "open:android": "cap open android",
     "open:ios": "cap open ios",
@@ -23,6 +24,7 @@
     "leaflet": "^1.9.4"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.0.0"
+    "@capacitor/cli": "^7.0.0",
+    "jsdom": "^29.1.1"
   }
 }

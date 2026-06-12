@@ -597,3 +597,18 @@ body {
 .connect-btn.connected { border-color: var(--green); background: rgba(31,93,58,.06); color: var(--green); }
 .connect-btn .g { width: 20px; height: 20px; flex: 0 0 auto; }
 
+
+/* ===================== עריכת מסלול ===================== */
+.trip-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.trip-edit-btn { flex: 0 0 auto; margin-top: 6px; }
+.trip-edit-btn.on { background: var(--primary); color: #fdf6ea; border-color: var(--primary); }
+.row-list .ri.skip { opacity: .45; }
+.row-list .ri.skip .nm { text-decoration: line-through; }
+.edit-ctl { margin-inline-start: auto; display: flex; gap: 5px; align-items: center; flex: 0 0 auto; }
+.edit-ctl button, .edit-ctl select {
+  border: 1px solid var(--line-2); background: var(--card); color: var(--ink-soft);
+  border-radius: 9px; min-width: 30px; height: 30px;
+  font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.edit-ctl select { padding: 0 3px; font-size: 12px; }
+.edit-ctl button:active { background: var(--paper-2); }
