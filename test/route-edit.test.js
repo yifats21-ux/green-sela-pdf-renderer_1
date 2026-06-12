@@ -84,4 +84,20 @@ check("אחרי איפוס: יום 2 בלי תחנה 4", !names2(2).split(",").i
 dom2.window.renderHome();
 check("מסך הבית מתרנדר אחרי עריכות", !!dom2.window.document.querySelector("#screen-home .scr-title"));
 
-process.exit(failures ? 1 : 0);
+// מסך הברכה בכניסה חוזרת: מוצג לכמה שניות ואז נעלם לבד
+const dom3 = new JSDOM(html, { runScripts: "outside-only", url: "https://localhost/" });
+dom3.window.L = w.L;
+dom3.window.requestAnimationFrame = (cb) => setTimeout(cb, 0);
+dom3.window.localStorage.setItem("vie_seen_welcome", "true");
+for (const f of ["image-slot.js", "data.js", "app.js", "app-plan.js"]) {
+  dom3.window.eval(fs.readFileSync("www/app/" + f, "utf8"));
+}
+const welcome = dom3.window.document.getElementById("welcome");
+check("בכניסה חוזרת: הברכה מוצגת בהתחלה", !welcome.classList.contains("hidden"));
+setTimeout(() => {
+  check("בכניסה חוזרת: הברכה עדיין מוצגת אחרי 3 שניות", !welcome.classList.contains("hidden"));
+}, 3000);
+setTimeout(() => {
+  check("בכניסה חוזרת: הברכה נעלמת לבד אחרי ~6 שניות", welcome.classList.contains("hidden"));
+  process.exit(failures ? 1 : 0);
+}, 6600);
