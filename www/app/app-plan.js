@@ -438,7 +438,13 @@
      ===================================================== */
   A.buildConfetti();
   window.renderHome(); window.renderTrip();
-  if (LS.get("seen_welcome", false)) $("#welcome").classList.add("hidden");
+  // בכניסה הראשונה הברכה נשארת עד לחיצה; בכניסות הבאות היא מוצגת
+  // לכמה שניות (ברכת "ברוך השב") וממשיכה לבד לאפליקציה.
+  const WELCOME_REVISIT_MS = 6000;
+  if (LS.get("seen_welcome", false)) {
+    $("#welcome-cta").textContent = "ממשיכים לטייל ✈️";
+    setTimeout(() => $("#welcome").classList.add("hidden"), WELCOME_REVISIT_MS);
+  }
   const lastTab = LS.get("tab", "home");
   if (lastTab !== "home") A.showScreen(lastTab);
 })();
