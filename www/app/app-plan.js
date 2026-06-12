@@ -46,7 +46,7 @@
           <span class="daychip" style="background:${meta.color}">יום ${d} · ${meta.title}</span>
         </div>
         <div class="next-row">
-          <span class="pin">${first.n}</span>
+          <span class="pin">${A.pinLabel(first)}</span>
           <div><div class="nm">${first.name}</div><div class="mt">התחנה הראשונה היום</div></div>
           <div class="countdown"><b>${startTimes[0]}</b><small>יציאה</small></div>
         </div>
@@ -66,7 +66,7 @@
       <div class="card"><div class="row-list">
         ${stops.map((s, i) => `
           <div class="ri" data-site="${s.n}">
-            <span class="pin sm" style="position:relative">${s.n}${A.isVisited("s" + s.n) ? `<span class="visited-badge">${IC.check}</span>` : ""}</span>
+            <span class="pin sm" style="position:relative">${A.pinLabel(s)}${A.isVisited("s" + s.n) ? `<span class="visited-badge">${IC.check}</span>` : ""}</span>
             <div><div class="nm">${s.name}</div><div class="mt">${s.price}</div></div>
             <span class="time">${startTimes[i] || ""}</span>${IC.chev}
           </div>`).join("")}
@@ -115,11 +115,12 @@
     const base = new Date(start + "T00:00:00");
     return T.days.map((d, i) => { const dt = new Date(base); dt.setDate(base.getDate() + i); return dt.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" }); });
   }
-  let tripEdit = false; // מצב עריכת מסלול
+  let tripEdit = false;     // מצב עריכת מסלול
+  let addPanelDay = null;   // היום שפאנל "הוסף תחנה" פתוח עבורו
 
   function editedRoute() {
     const ed = A.routeEdits();
-    return Object.keys(ed.day).length || Object.keys(ed.order).length || ed.skip.length;
+    return Object.keys(ed.day).length || Object.keys(ed.order).length || ed.skip.length || A.addedStops().length;
   }
   function normalizeDayOrder(ed, day) {
     // לפי הסדר האפקטיבי (ord), לא לפי מיקום במערך — שעדיין לא מוין מחדש
@@ -160,12 +161,71 @@
     afterRouteEdit();
   }
 
+  /* ---------- הוספת תחנות ליום ---------- */
+  function addStop(day, src) {
+    const n = A.nextAddedN();
+    let entry;
+    if (src.kind === "attr") {
+      const a = A.attractionById(src.refId);
+      entry = { n, day, refId: a.id, name: a.he, en: a.name, lat: a.lat, lng: a.lng, transport: a.area, fact: a.note, link: a.link || "" };
+    } else if (src.kind === "food") {
+      const f = A.foodById(src.refId);
+      entry = { n, day, refId: f.id, name: f.he, en: f.name, lat: f.lat, lng: f.lng, transport: f.area, fact: f.note };
+    } else {
+      // תחנה חופשית — ממוקמת במרכז אזור היום במפה
+      const stops = A.dayStops(day);
+      const lat = stops.reduce((sum, x) => sum + x.lat, 0) / stops.length;
+      const lng = stops.reduce((sum, x) => sum + x.lng, 0) / stops.length;
+      entry = { n, day, name: src.name, lat, lng };
+    }
+    A.setAddedStops(A.addedStops().concat([entry]));
+    A.toast("➕", "נוספה תחנה ליום " + day, `"${entry.name}" נכנסה לסוף היום.`);
+    afterRouteEdit();
+  }
+  function removeAddedStop(n) {
+    const s = A.siteByN(n);
+    if (!s.skip && A.dayStops(s.day).length <= 1) {
+      A.toast("⚠️", "אי אפשר", "חייבת להישאר לפחות תחנה אחת בכל יום."); return;
+    }
+    const ed = A.routeEdits();
+    delete ed.day[n]; delete ed.order[n];
+    ed.skip = ed.skip.filter(x => x !== n);
+    A.setRouteEdits(ed);
+    A.setAddedStops(A.addedStops().filter(a => a.n !== n));
+    A.toast("🗑️", "התחנה הוסרה", `"${s.name}" ירדה מהמסלול.`);
+    afterRouteEdit();
+  }
+  function addPanelHtml(day) {
+    const usedRefs = A.addedStops().map(a => a.refId).filter(Boolean);
+    const attrs = (T.attractions || []).filter(a => !usedRefs.includes(a.id));
+    const foods = T.food.filter(f => !usedRefs.includes(f.id));
+    const item = (emoji, name, sub, dataAttrs) => `
+      <div class="ap-item">
+        <span class="ap-em">${emoji}</span>
+        <div style="flex:1;min-width:0"><div class="nm">${name}</div><div class="mt">${sub}</div></div>
+        <button class="ap-add" ${dataAttrs} aria-label="הוסף">＋</button>
+      </div>`;
+    const empty = '<div class="ap-empty">הכל כבר נוסף 🎉</div>';
+    return `
+    <div class="add-panel">
+      <div class="ap-h">🏛️ אטרקציות מהברושור</div>
+      ${attrs.map(a => item(a.emoji, a.he, a.area, `data-add-attr="${a.id}" data-add-day="${day}"`)).join("") || empty}
+      <div class="ap-h">🍽️ אוכל מקומי</div>
+      ${foods.map(f => item(T.foodTypes[f.type].emoji, f.he, f.area, `data-add-food="${f.id}" data-add-day="${day}"`)).join("") || empty}
+      <div class="ap-h">✏️ תחנה משלכם</div>
+      <div class="ap-custom">
+        <input type="text" id="ap-custom-name" placeholder="למשל: קונצרט ערב, חנות מזכרות…">
+        <button class="ap-add" data-add-custom="${day}" aria-label="הוסף">＋</button>
+      </div>
+    </div>`;
+  }
+
   window.renderTrip = function () {
     const dates = tripDates();
     $("#screen-trip").innerHTML = `
       <div class="scr-head trip-head"><div>
-        <div class="scr-kicker">4 ימים · 11 אתרים</div><h1 class="scr-title">המסלול שלך</h1>
-        <div class="scr-sub">${tripEdit ? "סדרו מחדש, העבירו בין ימים או דלגו על תחנות" : dates ? "התאריכים שובצו — ההתראות פעילות" : "קבע תאריכים אמיתיים בלשונית ‹תכנון›"}</div></div>
+        <div class="scr-kicker">4 ימים · ${T.sites.filter(s => !s.skip).length} אתרים</div><h1 class="scr-title">המסלול שלך</h1>
+        <div class="scr-sub">${tripEdit ? "סדרו, העבירו בין ימים, דלגו או הוסיפו תחנות" : dates ? "התאריכים שובצו — ההתראות פעילות" : "קבע תאריכים אמיתיים בלשונית ‹תכנון›"}</div></div>
         <button class="btn btn--ghost btn--sm trip-edit-btn ${tripEdit ? "on" : ""}" id="trip-edit-btn">${tripEdit ? "✓ סיום" : "✏️ ערוך"}</button>
       </div>
       ${T.days.map(d => {
@@ -178,24 +238,29 @@
         <div class="card"><div class="row-list">
           ${stops.map(s => `
             <div class="ri ${s.skip ? "skip" : ""}" ${tripEdit ? "" : `data-site="${s.n}"`}>
-              <span class="pin sm" style="background:${d.color};position:relative">${s.n}${A.isVisited("s" + s.n) ? `<span class="visited-badge">${IC.check}</span>` : ""}</span>
+              <span class="pin sm" style="background:${d.color};position:relative">${A.pinLabel(s)}${A.isVisited("s" + s.n) ? `<span class="visited-badge">${IC.check}</span>` : ""}</span>
               <div><div class="nm">${s.name}</div><div class="mt">${s.skip ? "בדילוג — לא במסלול" : s.hours.split("·")[0]}</div></div>
               ${tripEdit ? `
               <span class="edit-ctl">
                 <button data-up="${s.n}" aria-label="העלה">↑</button>
                 <button data-down="${s.n}" aria-label="הורד">↓</button>
                 <select data-dayof="${s.n}" aria-label="העבר ליום">${T.days.map(x => `<option value="${x.id}" ${x.id === s.day ? "selected" : ""}>יום ${x.id}</option>`).join("")}</select>
-                <button data-skip="${s.n}" aria-label="${s.skip ? "החזר למסלול" : "דלג"}">${s.skip ? "↩" : "✕"}</button>
+                ${s.added
+                  ? `<button data-remove="${s.n}" aria-label="הסר תחנה">🗑</button>`
+                  : `<button data-skip="${s.n}" aria-label="${s.skip ? "החזר למסלול" : "דלג"}">${s.skip ? "↩" : "✕"}</button>`}
               </span>` : `
               <span class="time">${s.price.replace("לזוג", "").trim()}</span>${IC.chev}`}
             </div>`).join("")}
         </div>
+        ${tripEdit ? `
+          <button class="btn btn--ghost btn--sm add-stop-btn ${addPanelDay === d.id ? "on" : ""}" style="margin-top:11px;width:100%" data-addpanel="${d.id}">＋ הוסף תחנה ליום ${d.id}</button>
+          ${addPanelDay === d.id ? addPanelHtml(d.id) : ""}` : ""}
         ${walkable.length && !tripEdit ? `<button class="btn btn--ghost btn--sm" style="margin-top:13px;width:100%" data-walk="${walkable[0].n}">${IC.nav} צא למסלול היום</button>` : ""}</div>`;
       }).join("")}
       ${tripEdit && editedRoute() ? `<button class="btn btn--ghost btn--sm" style="width:100%;margin-top:4px" id="trip-reset">↺ אפס מסלול לברירת המחדל</button>` : ""}
       <div style="height:6px"></div>`;
 
-    $("#trip-edit-btn").addEventListener("click", () => { tripEdit = !tripEdit; window.renderTrip(); if (!tripEdit) A.toast("✓", "המסלול נשמר", "השינויים שלך נשמרו במכשיר."); });
+    $("#trip-edit-btn").addEventListener("click", () => { tripEdit = !tripEdit; if (!tripEdit) addPanelDay = null; window.renderTrip(); if (!tripEdit) A.toast("✓", "המסלול נשמר", "השינויים שלך נשמרו במכשיר."); });
     const reset = $("#trip-reset");
     if (reset) reset.addEventListener("click", () => { A.clearRouteEdits(); afterRouteEdit(); A.toast("↺", "המסלול אופס", "חזרנו למסלול המקורי של יפעת."); });
     $$("#screen-trip [data-site]").forEach(b => b.addEventListener("click", () => A.openSheet(+b.dataset.site)));
@@ -204,6 +269,18 @@
     $$("#screen-trip [data-down]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); moveStop(+b.dataset.down, 1); }));
     $$("#screen-trip [data-skip]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); toggleSkip(+b.dataset.skip); }));
     $$("#screen-trip [data-dayof]").forEach(sel => sel.addEventListener("change", () => moveStopToDay(+sel.dataset.dayof, +sel.value)));
+    $$("#screen-trip [data-remove]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); removeAddedStop(+b.dataset.remove); }));
+    $$("#screen-trip [data-addpanel]").forEach(b => b.addEventListener("click", () => {
+      addPanelDay = addPanelDay === +b.dataset.addpanel ? null : +b.dataset.addpanel;
+      window.renderTrip();
+    }));
+    $$("#screen-trip [data-add-attr]").forEach(b => b.addEventListener("click", () => addStop(+b.dataset.addDay, { kind: "attr", refId: b.dataset.addAttr })));
+    $$("#screen-trip [data-add-food]").forEach(b => b.addEventListener("click", () => addStop(+b.dataset.addDay, { kind: "food", refId: b.dataset.addFood })));
+    $$("#screen-trip [data-add-custom]").forEach(b => b.addEventListener("click", () => {
+      const inp = $("#ap-custom-name"), name = (inp && inp.value || "").trim();
+      if (!name) { A.toast("✏️", "רגע רגע", "כתבו שם לתחנה לפני ההוספה."); return; }
+      addStop(+b.dataset.addCustom, { kind: "custom", name });
+    }));
   };
 
   /* =====================================================

@@ -41,8 +41,32 @@ window.APP = (function () {
     return { day: e.day || {}, order: e.order || {}, skip: e.skip || [] };
   }
   function setRouteEdits(ed) { LS.set("route_edits", ed); applyRouteEdits(); rebuildRoutes(); }
-  function clearRouteEdits() { setRouteEdits({ day: {}, order: {}, skip: [] }); }
+  function clearRouteEdits() { LS.set("route_added", []); setRouteEdits({ day: {}, order: {}, skip: [] }); }
+
+  /* ---------- תחנות שהמשתמש הוסיף למסלול ---------- */
+  function addedStops() { return LS.get("route_added", []); }
+  function setAddedStops(list) { LS.set("route_added", list); applyRouteEdits(); rebuildRoutes(); }
+  function nextAddedN() { return addedStops().reduce((m, a) => Math.max(m, a.n), 100) + 1; }
+  function makeAddedSite(a) {
+    return {
+      n: a.n, day: a.day, scope: "city", added: true, refId: a.refId || null,
+      name: a.name, en: a.en || "", lat: a.lat, lng: a.lng,
+      hours: a.hours || "לפי בחירתכם",
+      transport: a.transport || "ראו במפה",
+      price: a.price || "—",
+      walk: "",
+      fact: a.fact || "תחנה שהוספתם בעצמכם למסלול — אל תשכחו לדרג ולתעד ביומן!",
+      link: a.link || "",
+    };
+  }
+  function pinLabel(s) { return s.added ? "★" : s.n; }
+
   function applyRouteEdits() {
+    // מיזוג תחנות שנוספו ע"י המשתמש (והסרת מה שנמחק)
+    const added = addedStops();
+    T.sites = T.sites.filter(s => !s.added || added.some(a => a.n === s.n));
+    added.forEach(a => { if (!T.sites.some(s => s.n === a.n)) T.sites.push(makeAddedSite(a)); });
+
     const ed = routeEdits();
     T.sites.forEach((s, i) => {
       if (s.day0 == null) { s.day0 = s.day; s.ord0 = s.day * 100 + i; } // ברירת המחדל המקורית
@@ -191,7 +215,7 @@ window.APP = (function () {
       const stops = dayStops(d.id);
       const line = L.polyline(stops.map(s => [s.lat, s.lng]), { color: d.color, weight: 3, opacity: .55, dashArray: "1 7", lineCap: "round" }).addTo(map);
       const markers = stops.map(s => {
-        const m = L.marker([s.lat, s.lng], { icon: numIcon(s.n, d.color) }).addTo(map);
+        const m = L.marker([s.lat, s.lng], { icon: numIcon(pinLabel(s), d.color) }).addTo(map);
         m.on("click", () => openSheet(s.n)); return m;
       });
       routeLayers.push({ day: d.id, line, markers });
@@ -385,8 +409,8 @@ window.APP = (function () {
     $("#sheet").innerHTML = `
       <div class="sheet__grab"></div>
       <div class="sheet__top">
-        <span class="pin" style="background:${meta.color};position:relative">${s.n}${isVisited(key) ? `<span class="visited-badge">${IC.check}</span>` : ""}</span>
-        <div style="flex:1"><div class="sheet__name">${s.name}</div><div class="sheet__en">${s.en} · יום ${s.day}</div></div>
+        <span class="pin" style="background:${meta.color};position:relative">${pinLabel(s)}${isVisited(key) ? `<span class="visited-badge">${IC.check}</span>` : ""}</span>
+        <div style="flex:1"><div class="sheet__name">${s.name}</div><div class="sheet__en">${s.en ? s.en + " · " : ""}יום ${s.day}</div></div>
       </div>
       <div class="sheet__facts">
         <div class="fct">${IC.clock}<div><b>שעות:</b> ${s.hours}</div></div>
@@ -397,7 +421,7 @@ window.APP = (function () {
         <div class="didyouknow__h">💡 הידעת, שלומי?</div>
         <p class="didyouknow__t">${s.fact}</p>
         <div class="didyouknow__row">
-          <a class="didyouknow__link" href="${s.link}" target="_blank" rel="noopener">${IC.link} קרא עוד לעומק</a>
+          ${s.link ? `<a class="didyouknow__link" href="${s.link}" target="_blank" rel="noopener">${IC.link} קרא עוד לעומק</a>` : "<span></span>"}
           <button class="voice-btn voice-btn--ink" data-voice="site${s.n}" style="padding:8px 13px;margin:0"><span class="eq"><i></i><i></i><i></i><i></i></span> שמע מיפעת</button>
         </div>
       </div>
@@ -486,7 +510,7 @@ window.APP = (function () {
       ? { name: place.he, walk: "פנו לכיוון " + place.area + ".", lat: place.lat, lng: place.lng, color: ATTR_COLOR, label: place.emoji, key: "a" + place.id, day: currentDay() }
       : foodTarget
       ? { name: foodTarget.he, walk: "פנו לכיוון " + foodTarget.area + ".", lat: foodTarget.lat, lng: foodTarget.lng, color: T.foodTypes[foodTarget.type].color, label: T.foodTypes[foodTarget.type].emoji, key: "f" + foodTarget.id, day: currentDay() }
-      : (() => { const s = siteByN(n), m = dayMeta(s.day); return { name: s.name, walk: s.walk, lat: s.lat, lng: s.lng, color: m.color, label: s.n, key: "s" + n, day: s.day, n: s.n }; })();
+      : (() => { const s = siteByN(n), m = dayMeta(s.day); return { name: s.name, walk: s.walk, lat: s.lat, lng: s.lng, color: m.color, label: pinLabel(s), key: "s" + n, day: s.day, n: s.n }; })();
     $("#walk-pin").textContent = target.label;
     $("#walk-pin").style.background = target.color;
     $("#walk-nm").textContent = target.name;
@@ -501,7 +525,7 @@ window.APP = (function () {
     const to = [target.lat, target.lng];
     const start = target.day > 2 ? [target.lat + 0.004, target.lng + 0.004] : [T.userStart.lat, T.userStart.lng];
     L.polyline([start, to], { color: target.color, weight: 5, opacity: .85, lineCap: "round" }).addTo(walkMap);
-    L.marker(to, { icon: target.n ? numIcon(target.n, target.color) : L.divIcon({ className: "", html: `<div class="food-marker" style="background:${target.color}">${target.label}</div>`, iconSize: [28,28], iconAnchor: [14,14] }) }).addTo(walkMap);
+    L.marker(to, { icon: target.n ? numIcon(target.label, target.color) : L.divIcon({ className: "", html: `<div class="food-marker" style="background:${target.color}">${target.label}</div>`, iconSize: [28,28], iconAnchor: [14,14] }) }).addTo(walkMap);
     // מקומות מקומיים ואטרקציות לאורך הדרך
     T.food.forEach(f => L.marker([f.lat, f.lng], { icon: foodIcon(f), opacity: .9 }).addTo(walkMap).on("click", () => openFoodSheet(f.id)));
     (T.attractions || []).forEach(a => L.marker([a.lat, a.lng], { icon: attrIcon(a), opacity: .9 }).addTo(walkMap).on("click", () => openAttractionSheet(a.id)));
@@ -604,7 +628,7 @@ window.APP = (function () {
   return {
     T, LS, IC, $, $$, toast, playVoice, showScreen, openSheet, openFoodSheet, openAttractionSheet, openWalk,
     siteByN, foodById, attractionById, dayStops, dayAllStops, dayMeta, fmtTime, addMin, parseTime, haversine,
-    routeEdits, setRouteEdits, clearRouteEdits,
+    routeEdits, setRouteEdits, clearRouteEdits, addedStops, setAddedStops, nextAddedN, pinLabel,
     settings, saveSettings, hotelArea, arrivalPlan, ratings, setRating, journal, addJournal, isVisited,
     currentDay, refreshMapVisited, refreshHotel, startGPS, stopGPS, playMoments, sharePrompt,
     buildConfetti, proximityScan, clearOffered: () => offered.clear(), closeWalk,
