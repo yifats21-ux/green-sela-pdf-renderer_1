@@ -32,7 +32,27 @@ window.APP = (function () {
   const foodById = id => T.food.find(f => f.id === id);
   const attractionById = id => (T.attractions || []).find(a => a.id === id);
   const ATTR_COLOR = "#355e8a";
-  const dayStops = d => T.sites.filter(s => s.day === d);
+  const dayStops = d => T.sites.filter(s => s.day === d && !s.skip);
+  const dayAllStops = d => T.sites.filter(s => s.day === d); // כולל תחנות בדילוג (לעריכה)
+
+  /* ---------- עריכת מסלול (יום, סדר, דילוג) ---------- */
+  function routeEdits() {
+    const e = LS.get("route_edits", {}) || {};
+    return { day: e.day || {}, order: e.order || {}, skip: e.skip || [] };
+  }
+  function setRouteEdits(ed) { LS.set("route_edits", ed); applyRouteEdits(); rebuildRoutes(); }
+  function clearRouteEdits() { setRouteEdits({ day: {}, order: {}, skip: [] }); }
+  function applyRouteEdits() {
+    const ed = routeEdits();
+    T.sites.forEach((s, i) => {
+      if (s.day0 == null) { s.day0 = s.day; s.ord0 = s.day * 100 + i; } // ברירת המחדל המקורית
+      s.day = ed.day[s.n] || s.day0;
+      s.skip = ed.skip.includes(s.n);
+      s.ord = ed.order[s.n] != null ? ed.order[s.n] : s.day * 100 + (s.ord0 % 100);
+    });
+    T.sites.sort((a, b) => a.ord - b.ord || a.n - b.n);
+  }
+  applyRouteEdits();
   const dayMeta = d => T.days.find(x => x.id === d);
   const fmtTime = d => d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
   function addMin(t, m) { const d = new Date(t.getTime() + m * 60000); return d; }
@@ -166,12 +186,7 @@ window.APP = (function () {
     return L.divIcon({ className: "", html: `<div class="food-marker" style="background:#2a2320;font-size:15px">🏨</div>`, iconSize: [30, 30], iconAnchor: [15, 15] });
   }
 
-  function initMap() {
-    if (map) { setTimeout(() => map.invalidateSize(), 60); refreshHotel(); return; }
-    map = L.map("leaf", { zoomControl: false, attributionControl: true });
-    L.tileLayer(TILE, { attribution: ATTR, maxZoom: 19 }).addTo(map);
-    L.control.zoom({ position: "bottomright" }).addTo(map);
-
+  function buildRouteLayers() {
     T.days.forEach(d => {
       const stops = dayStops(d.id);
       const line = L.polyline(stops.map(s => [s.lat, s.lng]), { color: d.color, weight: 3, opacity: .55, dashArray: "1 7", lineCap: "round" }).addTo(map);
@@ -181,6 +196,26 @@ window.APP = (function () {
       });
       routeLayers.push({ day: d.id, line, markers });
     });
+  }
+  function rebuildRoutes() {
+    if (!map) return;
+    routeLayers.forEach(r => { map.removeLayer(r.line); r.markers.forEach(m => map.removeLayer(m)); });
+    routeLayers = [];
+    buildRouteLayers();
+    routeLayers.forEach(r => { // החלת מסנן היום הנוכחי, בלי תעופה
+      const show = activeDayFilter === 0 || r.day === activeDayFilter;
+      r.line.setStyle({ opacity: show ? .55 : 0 });
+      r.markers.forEach(m => m.getElement() && (m.getElement().style.display = show ? "" : "none"));
+    });
+  }
+
+  function initMap() {
+    if (map) { setTimeout(() => map.invalidateSize(), 60); refreshHotel(); return; }
+    map = L.map("leaf", { zoomControl: false, attributionControl: true });
+    L.tileLayer(TILE, { attribution: ATTR, maxZoom: 19 }).addTo(map);
+    L.control.zoom({ position: "bottomright" }).addTo(map);
+
+    buildRouteLayers();
 
     foodMarkers = T.food.map(f => {
       const m = L.marker([f.lat, f.lng], { icon: foodIcon(f) }).addTo(map);
@@ -568,7 +603,8 @@ window.APP = (function () {
   // ממשק ציבורי
   return {
     T, LS, IC, $, $$, toast, playVoice, showScreen, openSheet, openFoodSheet, openAttractionSheet, openWalk,
-    siteByN, foodById, attractionById, dayStops, dayMeta, fmtTime, addMin, parseTime, haversine,
+    siteByN, foodById, attractionById, dayStops, dayAllStops, dayMeta, fmtTime, addMin, parseTime, haversine,
+    routeEdits, setRouteEdits, clearRouteEdits,
     settings, saveSettings, hotelArea, arrivalPlan, ratings, setRating, journal, addJournal, isVisited,
     currentDay, refreshMapVisited, refreshHotel, startGPS, stopGPS, playMoments, sharePrompt,
     buildConfetti, proximityScan, clearOffered: () => offered.clear(), closeWalk,
