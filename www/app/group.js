@@ -5,15 +5,15 @@
 (function () {
   "use strict";
 
-  /* ---------- הגדרת Firebase — מלאו את הפרטים שלכם ---------- */
+  /* ---------- הגדרת Firebase ---------- */
   const FIREBASE_CONFIG = {
-    apiKey:            "YOUR_API_KEY",
-    authDomain:        "YOUR_APP.firebaseapp.com",
-    databaseURL:       "https://YOUR_APP-default-rtdb.firebaseio.com",
-    projectId:         "YOUR_APP",
-    storageBucket:     "YOUR_APP.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId:             "YOUR_APP_ID"
+    apiKey:            "AIzaSyCiwDDwtl_J8nUHSvgSZuTWECbE7PngV2Q",
+    authDomain:        "vienna-with-shlomi.firebaseapp.com",
+    databaseURL:       "https://vienna-with-shlomi-default-rtdb.firebaseio.com",
+    projectId:         "vienna-with-shlomi",
+    storageBucket:     "vienna-with-shlomi.firebasestorage.app",
+    messagingSenderId: "415704711354",
+    appId:             "1:415704711354:web:d4547e1905ad786b1c4283"
   };
   const FIREBASE_READY = FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY";
 
