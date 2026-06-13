@@ -286,6 +286,15 @@ body {
   border: 2.5px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,.4);
 }
 .num-marker span { transform: rotate(-45deg); color: #fff; font-weight: 700; font-size: 14px; }
+
+/* מרקר נקודת גילוי (קטגוריה) — עיגול עם טבעת צבעונית, נבדל מפיני המסלול */
+.place-marker {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--pc, #888);
+  display: grid; place-items: center; font-size: 15px; line-height: 1;
+  box-shadow: 0 3px 9px rgba(0,0,0,.35);
+}
+
 .me-dot { width: 20px; height: 20px; }
 .me-dot .core { width: 16px; height: 16px; border-radius: 50%; background: var(--blue); border: 3px solid #fff; box-shadow: 0 0 0 2px rgba(42,108,214,.4); position: relative; z-index: 2; }
 .me-dot .pulse { position: absolute; inset: -8px; border-radius: 50%; background: rgba(42,108,214,.25); animation: pulse 2s ease-out infinite; }
@@ -433,18 +442,67 @@ body {
   display: grid; place-items: center; font-size: 14px;
   box-shadow: 0 3px 8px rgba(0,0,0,.35);
 }
-.maptoggle {
-  position: absolute; bottom: 22px; right: 16px; z-index: 500;
-  display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
-}
-.mt-btn {
+/* כפתור מעבר למפת לוויין / אורתופוטו */
+.basemap-btn {
+  position: absolute; bottom: 84px; left: 16px; z-index: 500;
+  display: flex; align-items: center; gap: 7px;
   background: var(--card); border: 1px solid var(--line); border-radius: 13px;
   padding: 9px 13px; font-family: var(--font); font-size: 12.5px; font-weight: 700;
-  color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; gap: 7px;
+  color: var(--ink-soft); cursor: pointer;
   box-shadow: 0 8px 20px -12px rgba(0,0,0,.5);
 }
-.mt-btn.on { background: var(--accent); color: #2a1408; border-color: var(--accent); }
-.mt-btn .em { font-size: 14px; }
+.basemap-btn.on { background: #1c2733; color: #fff; border-color: #1c2733; }
+.basemap-btn .bm-ic { font-size: 15px; }
+
+/* כפתור שכבות (FAB) ופאנל הקטגוריות */
+.layers-fab {
+  position: absolute; bottom: 22px; right: 16px; z-index: 500;
+  width: 50px; height: 50px; border-radius: 50%;
+  background: var(--card); border: 1px solid var(--line);
+  display: grid; place-items: center; cursor: pointer;
+  box-shadow: 0 10px 24px -10px rgba(0,0,0,.5);
+}
+.layers-fab svg { width: 23px; height: 23px; color: var(--primary); }
+.layers-fab.on { background: var(--primary); border-color: var(--primary); }
+.layers-fab.on svg { color: #fff; }
+
+.layers-panel {
+  position: absolute; bottom: 80px; right: 16px; z-index: 501;
+  width: 232px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 18px; padding: 12px; opacity: 0; pointer-events: none;
+  transform: translateY(10px) scale(.96); transform-origin: bottom right;
+  transition: opacity .22s ease, transform .22s ease;
+  box-shadow: 0 18px 40px -16px rgba(0,0,0,.55);
+}
+.layers-panel.open { opacity: 1; pointer-events: auto; transform: none; }
+.lp-head {
+  font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); padding: 2px 4px 8px;
+}
+.lp-list { display: flex; flex-direction: column; gap: 2px; }
+.lp-divider { height: 1px; background: var(--line); margin: 8px 2px; }
+.lp-row {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: none; border: 0; cursor: pointer; padding: 8px 6px; border-radius: 11px;
+  font-family: var(--font); text-align: start;
+}
+.lp-row:active { background: var(--paper-2); }
+.lp-dot {
+  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 14px; border: 2px solid #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,.25);
+}
+.lp-label { flex: 1; font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.lp-count { font-size: 11px; font-weight: 700; color: var(--muted); }
+.lp-check {
+  flex: 0 0 auto; width: 20px; height: 20px; border-radius: 6px;
+  border: 2px solid var(--line-2); position: relative; transition: .15s;
+}
+.lp-row[data-on="true"] .lp-check { background: var(--green); border-color: var(--green); }
+.lp-row[data-on="true"] .lp-check::after {
+  content: ""; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px;
+  border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+}
 
 .food-card .ri .nm { font-size: 14.5px; }
 .food-type-chip {

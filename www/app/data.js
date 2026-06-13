@@ -194,4 +194,90 @@ window.TRIP = {
     { id: "a8", name: "Rathaus", he: "בניין העירייה", emoji: "🏰", lat: 48.2108, lng: 16.3578, area: "מרכז (1)",
       note: "ארמון נאו-גותי מרשים; בקיץ פסטיבל קולנוע ואוכל בכיכר שלפניו.", link: "https://he.wikipedia.org/wiki/רטהאוס_(וינה)" },
   ],
+
+  // ===== שכבות גילוי על המפה — קטגוריות נפרדות, נבדלות מנקודות המסלול =====
+  placeCategories: {
+    cafe:          { label: "בתי קפה",   emoji: "☕", color: "#8a6d3b" },
+    restaurant:    { label: "מסעדות",     emoji: "🍽️", color: "#c75b39" },
+    museum:        { label: "מוזיאונים",  emoji: "🏛️", color: "#2e6da4" },
+    attraction:    { label: "אטרקציות",   emoji: "🏰", color: "#1f8a6d" },
+    entertainment: { label: "בידור ותרבות", emoji: "🎭", color: "#8e44ad" },
+    nightlife:     { label: "חיי לילה",   emoji: "🍸", color: "#d6336c" },
+  },
+
+  places: [
+    // ---- בתי קפה ☕ ----
+    { id: "p_caf1", cat: "cafe", name: "Café Sacher", he: "קפה זאכר", lat: 48.2037, lng: 16.3695, area: "מרכז (1)",
+      note: "ביתה של עוגת הזאכרטורטה המקורית מ-1832 — שוקולד ומשמש מאחורי האופרה." },
+    { id: "p_caf2", cat: "cafe", name: "Café Demel", he: "קפה דמל", lat: 48.2095, lng: 16.3667, area: "מרכז (1)",
+      note: "ממתקן הקיסר לשעבר. ויטרינות עוגות מסוגננות וחנות שוקולד אגדית." },
+    { id: "p_caf3", cat: "cafe", name: "Café Hawelka", he: "קפה הוולקה", lat: 48.2090, lng: 16.3700, area: "מרכז (1)",
+      note: "קפה בוהמייני אפלולי, מוסד אמנים מאז 1939. ה-Buchteln החמים יוצאים אחרי 22:00." },
+    { id: "p_caf4", cat: "cafe", name: "Café Landtmann", he: "קפה לנדטמן", lat: 48.2128, lng: 16.3608, area: "מרכז (1)",
+      note: "הקפה האהוב על פרויד, ליד הבורגתיאטר. אלגנטי, מרפסת נעימה ועוגות קלאסיות." },
+    { id: "p_caf5", cat: "cafe", name: "Café Prückel", he: "קפה פריקל", lat: 48.2078, lng: 16.3787, area: "מרכז (1)",
+      note: "פנים שנות ה-50 מקוריים, פסנתר חי בערבים. פחות תיירותי, יותר וינאי." },
+    { id: "p_caf6", cat: "cafe", name: "Café Jelinek", he: "קפה ילינק", lat: 48.1958, lng: 16.3503, area: "נויבאו (6)",
+      note: "תנור עצים בוער וקהל מקומי. הריח של וינה הישנה, רחוק מההמולה." },
+
+    // ---- מסעדות 🍽️ ----
+    { id: "p_res1", cat: "restaurant", name: "Figlmüller", he: "פיגלמילר", lat: 48.2086, lng: 16.3759, area: "מרכז (1)",
+      note: "ה'שניצל שגדול מהצלחת' המפורסם בעולם. מוסד מ-1905 — כדאי להזמין מקום." },
+    { id: "p_res2", cat: "restaurant", name: "Plachutta", he: "פלכוטה", lat: 48.2092, lng: 16.3812, area: "מרכז (1)",
+      note: "מקדש ה-Tafelspitz — בשר מבושל בסיר נחושת כמו אצל הקיסר פרנץ יוזף." },
+    { id: "p_res3", cat: "restaurant", name: "Zum Schwarzen Kameel", he: "צום שוורצן קמל", lat: 48.2096, lng: 16.3680, area: "מרכז (1)",
+      note: "דליקטסן וינאי מ-1618. כריכים פתוחים קטנים ויין לבן בעמידה ליד הבר." },
+    { id: "p_res4", cat: "restaurant", name: "Gasthaus Pöschl", he: "גסטהאוס פֶּשל", lat: 48.2065, lng: 16.3745, area: "מרכז (1)",
+      note: "ביזל קטן ואותנטי, מטבח וינאי ביתי. המקומיים מזמינים שולחן מראש." },
+    { id: "p_res5", cat: "restaurant", name: "Schnitzelwirt", he: "שניצלוירט", lat: 48.2000, lng: 16.3470, area: "נויבאו (7)",
+      note: "שניצל ענק במחיר שכונתי. רועש, מלא, מוסד מקומי — בדיוק כמו שצריך." },
+
+    // ---- מוזיאונים 🏛️ ----
+    { id: "p_mus1", cat: "museum", name: "Kunsthistorisches Museum", he: "מוזיאון תולדות האמנות", lat: 48.2039, lng: 16.3616, area: "מרכז (1)",
+      note: "אחד ממוזיאוני האמנות הגדולים באירופה — ברויגל, ורמיר ורפאל תחת כיפה מפוארת.", link: "https://he.wikipedia.org/wiki/מוזיאון_תולדות_האמנות_בווינה" },
+    { id: "p_mus2", cat: "museum", name: "Albertina", he: "אלברטינה", lat: 48.2043, lng: 16.3683, area: "מרכז (1)",
+      note: "מונה, פיקאסו ודירר בארמון קיסרי משופץ מול האופרה.", link: "https://he.wikipedia.org/wiki/אלברטינה" },
+    { id: "p_mus3", cat: "museum", name: "Leopold Museum", he: "מוזיאון לאופולד", lat: 48.2027, lng: 16.3585, area: "מוזיאומסקוורטיר (7)",
+      note: "האוסף הגדול בעולם של אגון שילה, וקלימט. בלב רובע המוזיאונים התוסס." },
+    { id: "p_mus4", cat: "museum", name: "Naturhistorisches Museum", he: "המוזיאון לטבע", lat: 48.2052, lng: 16.3596, area: "מרכז (1)",
+      note: "'ונוס מווילנדורף' בת 29,000 השנה ושלדי דינוזאורים, בבניין תאום ל-KHM." },
+    { id: "p_mus5", cat: "museum", name: "Sigmund Freud Museum", he: "מוזיאון פרויד", lat: 48.2168, lng: 16.3640, area: "אלזרגרונד (9)",
+      note: "הדירה והקליניקה המקוריות של אבי הפסיכואנליזה, ברגאסה 19." },
+
+    // ---- אטרקציות 🏰 ----
+    { id: "p_att1", cat: "attraction", name: "Belvedere", he: "ארמון בלוודרה", lat: 48.1915, lng: 16.3805, area: "לנדשטראסה (3)",
+      note: "ארמון בארוק ובו 'הנשיקה' של קלימט — אחת היצירות המפורסמות בעולם.", link: "https://he.wikipedia.org/wiki/ארמון_בלוודר" },
+    { id: "p_att2", cat: "attraction", name: "Karlskirche", he: "כנסיית קרל", lat: 48.1985, lng: 16.3719, area: "וִידֶן (4)",
+      note: "כנסייה בארוקית עם כיפה ירוקה ומעלית פנימית עד לציורי הכיפה.", link: "https://he.wikipedia.org/wiki/קרלסקירכה" },
+    { id: "p_att3", cat: "attraction", name: "Hundertwasserhaus", he: "בית הונדרטוואסר", lat: 48.2070, lng: 16.3940, area: "לנדשטראסה (3)",
+      note: "בניין מגורים פסיכדלי ללא קווים ישרים — יצירת מופת אקולוגית.", link: "https://he.wikipedia.org/wiki/הונדרטוואסרהאוס" },
+    { id: "p_att4", cat: "attraction", name: "Peterskirche", he: "כנסיית פטר", lat: 48.2088, lng: 16.3690, area: "מרכז (1)",
+      note: "כנסייה בארוקית עגולה ומוזהבת ליד הגראבן, עם קונצרטי עוגב חינמיים." },
+    { id: "p_att5", cat: "attraction", name: "Donauturm", he: "מגדל הדנובה", lat: 48.2410, lng: 16.4100, area: "דונאוסטאדט (22)",
+      note: "מגדל התצפית הגבוה באוסטריה (252 מ') — נוף פנורמי, מסעדה מסתובבת ובנג'י." },
+
+    // ---- בידור ותרבות 🎭 ----
+    { id: "p_ent1", cat: "entertainment", name: "Staatsoper", he: "האופרה הממלכתית", lat: 48.2030, lng: 16.3691, area: "מרכז (1)",
+      note: "מבתי האופרה החשובים בעולם. כרטיסי עמידה אחרונים בכמה אירו בלבד.", link: "https://he.wikipedia.org/wiki/אופרת_מדינת_וינה" },
+    { id: "p_ent2", cat: "entertainment", name: "Musikverein", he: "מוזיקפריין", lat: 48.2008, lng: 16.3727, area: "מרכז (1)",
+      note: "ה'אולם הזהב' שממנו משודר קונצרט השנה החדשה לכל העולם." },
+    { id: "p_ent3", cat: "entertainment", name: "Wiener Konzerthaus", he: "קונצרטהאוס", lat: 48.2003, lng: 16.3776, area: "לנדשטראסה (3)",
+      note: "אולם קונצרטים מרכזי — מקלאסי ועד ג'אז ומוזיקה עכשווית." },
+    { id: "p_ent4", cat: "entertainment", name: "Burgtheater", he: "בורגתיאטר", lat: 48.2103, lng: 16.3614, area: "מרכז (1)",
+      note: "התיאטרון הלאומי האוסטרי, אחד החשובים בעולם דובר הגרמנית." },
+    { id: "p_ent5", cat: "entertainment", name: "Spanische Hofreitschule", he: "אסכולת הרכיבה הספרדית", lat: 48.2076, lng: 16.3665, area: "מרכז (1)",
+      note: "סוסי הליפיצנר הלבנים — מסורת רכיבה קיסרית בת 450 שנה.", link: "https://he.wikipedia.org/wiki/בית_הספר_הספרדי_לרכיבה" },
+
+    // ---- חיי לילה 🍸 ----
+    { id: "p_ngt1", cat: "nightlife", name: "Loos American Bar", he: "בר אמריקן (לוס)", lat: 48.2083, lng: 16.3702, area: "מרכז (1)",
+      note: "בר קוקטיילים זעיר ואיקוני מ-1908 בעיצוב אדולף לוס — שיש, מראות ופליז." },
+    { id: "p_ngt2", cat: "nightlife", name: "Das Loft", he: "דאס לופט", lat: 48.2122, lng: 16.3838, area: "לאופולדשטאדט (2)",
+      note: "בר גג בקומה ה-18 עם תקרת זכוכית צבעונית ונוף עוצר נשימה של העיר." },
+    { id: "p_ngt3", cat: "nightlife", name: "Bermuda Bräu", he: "ברמודה (משולש הברים)", lat: 48.2118, lng: 16.3755, area: "מרכז (1)",
+      note: "לב 'משולש ברמודה' — אזור הברים ההיסטורי והתוסס של מרכז העיר." },
+    { id: "p_ngt4", cat: "nightlife", name: "Volksgarten Club", he: "מועדון פולקסגארטן", lat: 48.2057, lng: 16.3608, area: "מרכז (1)",
+      note: "מועדון אגדי בגן ארמוני; גינת בירה בקיץ ורחבת ריקודים בלילה." },
+    { id: "p_ngt5", cat: "nightlife", name: "Mayer am Pfarrplatz", he: "מאייר אם פפארפלאץ", lat: 48.2540, lng: 16.3580, area: "הייליגנשטאדט (19)",
+      note: "יקב-הויריגר בבית שבו גר בטהובן. יין מקומי וערב וינאי בגבעות." },
+  ],
 };

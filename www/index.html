@@ -54,10 +54,21 @@
           <button class="locate-btn" id="locate-btn" aria-label="מצא אותי">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
           </button>
-          <div class="maptoggle">
-            <button class="mt-btn on" id="tg-food"><span class="em">🍽️</span> אוכל מקומי</button>
-            <button class="mt-btn on" id="tg-attr"><span class="em">🏛️</span> אטרקציות</button>
-            <button class="mt-btn" id="tg-visited"><span class="em">📍</span> איפה הייתי</button>
+          <button class="basemap-btn" id="basemap-btn" aria-label="תצוגת לוויין">
+            <span class="bm-ic">🛰️</span><span class="bm-tx" id="basemap-label">לוויין</span>
+          </button>
+          <button class="layers-fab" id="layers-fab" aria-label="שכבות מפה">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </button>
+          <div class="layers-panel" id="layers-panel">
+            <div class="lp-head">שכבות על המפה</div>
+            <div class="lp-list" id="lp-list"></div>
+            <div class="lp-divider"></div>
+            <button class="lp-row" id="tg-visited" data-on="false">
+              <span class="lp-dot" style="background:var(--green)">📍</span>
+              <span class="lp-label">איפה הייתי</span>
+              <span class="lp-check"></span>
+            </button>
           </div>
         </div>
       </section>
