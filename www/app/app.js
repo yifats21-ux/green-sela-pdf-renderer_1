@@ -236,7 +236,6 @@ window.APP = (function () {
   function initMap() {
     if (map) { setTimeout(() => map.invalidateSize(), 60); refreshHotel(); return; }
     map = L.map("leaf", { zoomControl: false, attributionControl: true });
-    window._APP_MAP = map; // חשוף למודול שיתוף המיקום
     L.tileLayer(TILE, { attribution: ATTR, maxZoom: 19 }).addTo(map);
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
