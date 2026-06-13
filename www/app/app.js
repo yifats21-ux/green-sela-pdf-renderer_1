@@ -634,12 +634,21 @@ window.APP = (function () {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, service })
-      }).then(r => r.json()).then(data => {
+      }).then(r => r.json()).then(async data => {
         if (data.accessToken) {
           const auth = LS.get("google_auth", { photos: null, drive: null });
           auth[service] = data.accessToken;
           LS.set("google_auth", auth);
           toast("✅", "מחובר", `${service === "photos" ? "Google Photos" : "Drive"} מחובר בהצלחה!`);
+
+          // אם הם התחברו ל-Google Photos, תיאו תמונות אוטומטית
+          if (service === "photos") {
+            const s = settings();
+            if (s.flightArrDate && s.flightBackDate) {
+              toast("📸", "טוען תמונות...", "אתר תמונות מהטיול שלך");
+              await fetchGooglePhotos(new Date(s.flightArrDate), new Date(s.flightBackDate));
+            }
+          }
           window.renderJournal?.();
         } else if (data.error) {
           toast("❌", "שגיאה", data.error);
@@ -654,28 +663,52 @@ window.APP = (function () {
     const auth = LS.get("google_auth", { photos: null, drive: null });
     if (!auth.photos) return [];
     try {
-      const r = await fetch("https://photoslibrary.googleapis.com/v1/mediaItems:search", {
+      const r = await fetch("/api/google-photos-fetch", {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${auth.photos}`,
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pageSize: 25,
-          filters: {
-            dateFilter: {
-              ranges: [{
-                startDate: { year: startDate.getFullYear(), month: startDate.getMonth() + 1, day: startDate.getDate() },
-                endDate: { year: endDate.getFullYear(), month: endDate.getMonth() + 1, day: endDate.getDate() }
-              }]
-            }
-          }
+          accessToken: auth.photos,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString()
         })
       });
-      return (await r.json()).mediaItems || [];
+      const data = await r.json();
+      if (data.mediaItems && data.mediaItems.length > 0) {
+        toast("📸", "תמונות נטענות", `נמצאו ${data.mediaItems.length} תמונות מהטיול`);
+        distributePhotosToJournal(data.mediaItems, startDate, endDate);
+        return data.mediaItems;
+      }
+      return [];
     } catch (e) {
+      console.error("Photo fetch error:", e);
       return [];
     }
+  }
+
+  function distributePhotosToJournal(mediaItems, startDate, endDate) {
+    const photos = mediaItems.map(m => ({
+      date: new Date(m.mediaMetadata.creationTime),
+      url: m.baseUrl + "=w400-h400"
+    })).filter(p => p.date >= startDate && p.date <= endDate);
+
+    photos.forEach((photo, idx) => {
+      const day = T.days.find(d => {
+        const start = new Date(A.settings().flightArrDate);
+        const photoDate = new Date(photo.date.toISOString().slice(0, 10));
+        const dayStart = new Date(start.getTime() + (d.id - 1) * 24 * 60 * 60 * 1000);
+        const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+        return photoDate >= dayStart && photoDate < dayEnd;
+      });
+
+      if (!day) return;
+      const slotNum = (idx % 4) + 1;
+      const slotId = `ph-d${day.id}-${slotNum}`;
+      const slot = $(slotId);
+      if (slot) {
+        slot.setAttribute("src", photo.url);
+        LS.set(`photo_d${day.id}_${slotNum}`, photo.url);
+      }
+    });
   }
 
   // ממשק ציבורי

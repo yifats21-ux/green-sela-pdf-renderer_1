@@ -295,6 +295,7 @@
       auth[service] = null;
       LS.set("google_auth", auth);
       A.toast("🔌", "מנותק", `${service === "photos" ? "Google Photos" : "Drive"} מנותק.`);
+      if (service === "photos") await A.fetchGooglePhotos(new Date(A.settings().flightArrDate), new Date(A.settings().flightBackDate));
       window.renderJournal();
       return;
     }
@@ -303,8 +304,11 @@
       ? "https://www.googleapis.com/auth/photoslibrary.readonly"
       : "https://www.googleapis.com/auth/drive.file";
 
-    const clientId = "YOUR_GOOGLE_CLIENT_ID";
-    const redirectUri = window.location.origin + (window.location.pathname.endsWith("/") ? "oauth-callback.html" : "/oauth-callback.html");
+    // הערה: החלף CLIENT_ID בפרטים שלך מ-Google Cloud Console
+    const clientId = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+    const redirectUri = (window.location.hostname === "localhost"
+      ? "http://localhost:8080"
+      : window.location.origin) + "/oauth-callback.html";
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=${service}`;
 

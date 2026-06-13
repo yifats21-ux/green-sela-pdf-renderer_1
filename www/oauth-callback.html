@@ -32,16 +32,20 @@
     if (error) {
       if (window.opener) {
         window.opener.postMessage({ type: "oauth_error", service, error }, "*");
-        window.close();
+        setTimeout(() => window.close(), 1500);
       } else {
         document.querySelector("h2").textContent = "❌ שגיאה בחיבור";
         document.querySelector("p").textContent = `שגיאה: ${error}`;
       }
     } else if (code) {
       if (window.opener) {
+        document.querySelector("p").textContent = "שולח את הקוד...";
+        // שלח את הקוד לחלון הראשי
         window.opener.postMessage({ type: "oauth_code", code, service }, "*");
-        window.close();
+        // המתן לאישור ואז סגור
+        setTimeout(() => window.close(), 1500);
       } else {
+        // fallback אם אין חלון אב
         document.querySelector("p").textContent = "יוזם שליחת הקוד...";
         fetch("/api/google-oauth-exchange", {
           method: "POST",
@@ -57,12 +61,6 @@
         });
       }
     }
-
-    window.addEventListener("message", (e) => {
-      if (e.data.type === "oauth_code") {
-        sessionStorage.setItem("oauth_service", e.data.service);
-      }
-    });
   </script>
 </body>
 </html>
