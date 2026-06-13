@@ -286,8 +286,31 @@
   /* =====================================================
      מסך יומן — ציר זמן, תמונות, סרטוני רגעים, הקדשה
      ===================================================== */
-  function connectState() { return LS.get("connect", { drive: false, photos: false }); }
+  function connectState() { return LS.get("google_auth", { photos: null, drive: null }); }
   function gIcon() { return '<svg class="g" viewBox="0 0 24 24"><path fill="#4285F4" d="M22 12.2c0-.7-.06-1.4-.18-2H12v3.9h5.6a4.8 4.8 0 0 1-2.08 3.15v2.6h3.36C20.84 18.1 22 15.4 22 12.2z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.64-2.45l-3.36-2.6c-.93.62-2.12.98-3.28.98-2.52 0-4.66-1.7-5.42-4H3.1v2.6A10 10 0 0 0 12 22z"/><path fill="#FBBC05" d="M6.58 13.93a6 6 0 0 1 0-3.86V7.47H3.1a10 10 0 0 0 0 9.06z"/><path fill="#EA4335" d="M12 6.6c1.47 0 2.78.5 3.82 1.5l2.85-2.85A10 10 0 0 0 3.1 7.47l3.48 2.6C7.34 8.3 9.48 6.6 12 6.6z"/></svg>'; }
+
+  async function googleOAuthFlow(service) {
+    const auth = connectState();
+    if (auth[service]) {
+      auth[service] = null;
+      LS.set("google_auth", auth);
+      A.toast("🔌", "מנותק", `${service === "photos" ? "Google Photos" : "Drive"} מנותק.`);
+      window.renderJournal();
+      return;
+    }
+
+    const scope = service === "photos"
+      ? "https://www.googleapis.com/auth/photoslibrary.readonly"
+      : "https://www.googleapis.com/auth/drive.file";
+
+    const clientId = "YOUR_GOOGLE_CLIENT_ID";
+    const redirectUri = window.location.origin + (window.location.pathname.endsWith("/") ? "oauth-callback.html" : "/oauth-callback.html");
+
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=${service}`;
+
+    A.toast("🔄", "מתחבר ל-Google...", "עברו לחלון התחברות.");
+    window.open(authUrl, "_blank", "width=500,height=600");
+  }
 
   function slotSrc(id) {
     const el = document.getElementById(id);
@@ -396,12 +419,7 @@
     return frames;
   }
   function toggleConnect(which) {
-    const cs = connectState(); cs[which] = !cs[which]; LS.set("connect", cs);
-    A.toast(cs[which] ? "✅" : "🔌", cs[which] ? "מחובר (הדגמה)" : "נותק",
-      which === "photos"
-        ? (cs[which] ? "תמונות מהטיול ייסרקו לפי תאריך ומיקום. בגרסה החיה — דרך חשבון Google שלך." : "")
-        : (cs[which] ? "גיבוי אוטומטי של הסרטונים ל-Drive (הדגמה)." : ""));
-    window.renderJournal();
+    googleOAuthFlow(which);
   }
 
   /* =====================================================

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="utf-8">
+  <title>Google OAuth Callback</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: #f5f5f5; margin: 0;
+    }
+    .container {
+      background: white; padding: 30px; border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;
+    }
+    h2 { color: #1f2937; margin-top: 0; }
+    p { color: #6b7280; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔄 מתחבר...</h2>
+    <p>חכו בעוד שמעבדים את ההתחברות ל-Google...</p>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const error = params.get("error");
+    const service = params.get("state") || (window.opener ? (sessionStorage.getItem("oauth_service") || "photos") : "photos");
+
+    if (error) {
+      if (window.opener) {
+        window.opener.postMessage({ type: "oauth_error", service, error }, "*");
+        window.close();
+      } else {
+        document.querySelector("h2").textContent = "❌ שגיאה בחיבור";
+        document.querySelector("p").textContent = `שגיאה: ${error}`;
+      }
+    } else if (code) {
+      if (window.opener) {
+        window.opener.postMessage({ type: "oauth_code", code, service }, "*");
+        window.close();
+      } else {
+        document.querySelector("p").textContent = "יוזם שליחת הקוד...";
+        fetch("/api/google-oauth-exchange", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code, service })
+        }).then(() => {
+          document.querySelector("h2").textContent = "✅ מחובר בהצלחה!";
+          document.querySelector("p").textContent = "ניתן לסגור חלון זה.";
+          setTimeout(() => window.close(), 2000);
+        }).catch(e => {
+          document.querySelector("h2").textContent = "❌ שגיאה";
+          document.querySelector("p").textContent = e.message;
+        });
+      }
+    }
+
+    window.addEventListener("message", (e) => {
+      if (e.data.type === "oauth_code") {
+        sessionStorage.setItem("oauth_service", e.data.service);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -612,6 +612,8 @@ window.APP = (function () {
   $$(".tab").forEach(t => t.addEventListener("click", () => showScreen(t.dataset.screen)));
   $("#scrim").addEventListener("click", closeSheet);
   $("#walk-close").addEventListener("click", closeWalk);
+  const mapMenuBtn = $("#map-menu-btn");
+  if (mapMenuBtn) mapMenuBtn.addEventListener("click", () => showScreen("home"));
 
   /* ---------- ברכת פתיחה ---------- */
   function buildConfetti() {
@@ -624,6 +626,58 @@ window.APP = (function () {
   $("#welcome-skip").addEventListener("click", dismissWelcome);
   $("#welcome-voice").addEventListener("click", e => playVoice("welcome", e.currentTarget));
 
+  /* ---------- Google Photos API ---------- */
+  window.addEventListener("message", (e) => {
+    if (e.data.type === "oauth_code") {
+      const { code, service } = e.data;
+      fetch("/api/google-oauth-exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, service })
+      }).then(r => r.json()).then(data => {
+        if (data.accessToken) {
+          const auth = LS.get("google_auth", { photos: null, drive: null });
+          auth[service] = data.accessToken;
+          LS.set("google_auth", auth);
+          toast("✅", "מחובר", `${service === "photos" ? "Google Photos" : "Drive"} מחובר בהצלחה!`);
+          window.renderJournal?.();
+        } else if (data.error) {
+          toast("❌", "שגיאה", data.error);
+        }
+      }).catch(e => toast("❌", "שגיאה", "שגיאה בחיבור: " + e.message));
+    } else if (e.data.type === "oauth_error") {
+      toast("❌", "שגיאה בחיבור", e.data.error);
+    }
+  });
+
+  async function fetchGooglePhotos(startDate, endDate) {
+    const auth = LS.get("google_auth", { photos: null, drive: null });
+    if (!auth.photos) return [];
+    try {
+      const r = await fetch("https://photoslibrary.googleapis.com/v1/mediaItems:search", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${auth.photos}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          pageSize: 25,
+          filters: {
+            dateFilter: {
+              ranges: [{
+                startDate: { year: startDate.getFullYear(), month: startDate.getMonth() + 1, day: startDate.getDate() },
+                endDate: { year: endDate.getFullYear(), month: endDate.getMonth() + 1, day: endDate.getDate() }
+              }]
+            }
+          }
+        })
+      });
+      return (await r.json()).mediaItems || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   // ממשק ציבורי
   return {
     T, LS, IC, $, $$, toast, playVoice, showScreen, openSheet, openFoodSheet, openAttractionSheet, openWalk,
@@ -631,6 +685,6 @@ window.APP = (function () {
     routeEdits, setRouteEdits, clearRouteEdits, addedStops, setAddedStops, nextAddedN, pinLabel,
     settings, saveSettings, hotelArea, arrivalPlan, ratings, setRating, journal, addJournal, isVisited,
     currentDay, refreshMapVisited, refreshHotel, startGPS, stopGPS, playMoments, sharePrompt,
-    buildConfetti, proximityScan, clearOffered: () => offered.clear(), closeWalk,
+    buildConfetti, proximityScan, clearOffered: () => offered.clear(), closeWalk, fetchGooglePhotos,
   };
 })();
