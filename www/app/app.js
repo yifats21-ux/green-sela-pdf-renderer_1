@@ -618,7 +618,15 @@ window.APP = (function () {
     const panel = $("#layers-panel"), fab = $("#layers-fab");
     if (panel) panel.classList.remove("open");
     if (fab) fab.classList.remove("on");
-    $("#sheet").classList.add("open");
+    // הוסף כפתור X לסגירה בפינה השמאלית העליונה
+    const sh = $("#sheet");
+    const xBtn = document.createElement("button");
+    xBtn.className = "sheet-x-btn";
+    xBtn.setAttribute("aria-label", "סגור");
+    xBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+    xBtn.addEventListener("click", closeSheet);
+    sh.insertBefore(xBtn, sh.firstChild);
+    sh.classList.add("open");
     $("#scrim").classList.add("open");
   }
   function closeSheet() { $("#sheet").classList.remove("open"); $("#scrim").classList.remove("open"); }
