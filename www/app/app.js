@@ -201,19 +201,19 @@ window.APP = (function () {
   let showVisited = false, activeDayFilter = 0;
 
   function numIcon(n, color) {
-    return L.divIcon({ className: "", html: `<div class="num-marker" style="background:${color}"><span>${n}</span></div>`, iconSize: [30, 30], iconAnchor: [15, 28] });
+    return L.divIcon({ className: "", html: `<div class="marker-tap"><div class="num-marker" style="background:${color}"><span>${n}</span></div></div>`, iconSize: [44, 44], iconAnchor: [22, 36] });
   }
   function foodIcon(f) {
     const ft = T.foodTypes[f.type];
-    return L.divIcon({ className: "", html: `<div class="food-marker" style="background:${ft.color}">${ft.emoji}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] });
+    return L.divIcon({ className: "", html: `<div class="marker-tap"><div class="food-marker" style="background:${ft.color}">${ft.emoji}</div></div>`, iconSize: [44, 44], iconAnchor: [22, 22] });
   }
   function attrIcon(a) {
-    return L.divIcon({ className: "", html: `<div class="food-marker" style="background:${ATTR_COLOR}">${a.emoji}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] });
+    return L.divIcon({ className: "", html: `<div class="marker-tap"><div class="food-marker" style="background:${ATTR_COLOR}">${a.emoji}</div></div>`, iconSize: [44, 44], iconAnchor: [22, 22] });
   }
   // מרקר נקודת גילוי — עיגול עם טבעת בצבע הקטגוריה, נבדל מפיני המסלול הממוספרים
   function placeIcon(cat) {
     const c = T.placeCategories[cat];
-    return L.divIcon({ className: "", html: `<div class="place-marker" style="--pc:${c.color}">${c.emoji}</div>`, iconSize: [30, 30], iconAnchor: [15, 15] });
+    return L.divIcon({ className: "", html: `<div class="marker-tap"><div class="place-marker" style="--pc:${c.color}">${c.emoji}</div></div>`, iconSize: [44, 44], iconAnchor: [22, 22] });
   }
   function meIcon() {
     return L.divIcon({ className: "", html: `<div class="me-dot"><div class="pulse"></div><div class="core"></div></div>`, iconSize: [20, 20], iconAnchor: [10, 10] });
@@ -377,9 +377,15 @@ window.APP = (function () {
   function wireMapToggles() {
     const fab = $("#layers-fab"), panel = $("#layers-panel");
     if (fab && panel) {
-      fab.addEventListener("click", () => { panel.classList.toggle("open"); fab.classList.toggle("on", panel.classList.contains("open")); });
-      // סגירה בלחיצה על המפה
-      map.on("click", () => { panel.classList.remove("open"); fab.classList.remove("on"); });
+      fab.addEventListener("click", (e) => {
+        e.stopPropagation();
+        panel.classList.toggle("open");
+        fab.classList.toggle("on", panel.classList.contains("open"));
+      });
+      // סגירה בכל נגיעה על קנבס המפה — גם רקע וגם מרקרים
+      const closeLayers = () => { panel.classList.remove("open"); fab.classList.remove("on"); };
+      $("#leaf").addEventListener("touchstart", closeLayers, { passive: true });
+      map.on("click", closeLayers);
     }
     const vis = $("#tg-visited");
     if (vis) vis.addEventListener("click", () => {
@@ -607,7 +613,14 @@ window.APP = (function () {
     const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
     return `rgba(${r},${g},${b},${a})`;
   }
-  function openSheetEl() { $("#sheet").classList.add("open"); $("#scrim").classList.add("open"); }
+  function openSheetEl() {
+    // סגור פאנל שכבות אם פתוח — כל לחיצה על מרקר סוגרת אותו
+    const panel = $("#layers-panel"), fab = $("#layers-fab");
+    if (panel) panel.classList.remove("open");
+    if (fab) fab.classList.remove("on");
+    $("#sheet").classList.add("open");
+    $("#scrim").classList.add("open");
+  }
   function closeSheet() { $("#sheet").classList.remove("open"); $("#scrim").classList.remove("open"); }
 
   /* =====================================================

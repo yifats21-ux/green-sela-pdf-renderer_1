@@ -295,6 +295,13 @@ body {
   box-shadow: 0 6px 16px -10px rgba(0,0,0,.5);
 }
 
+/* שטח לחיצה מורחב (44×44) עוטף כל מרקר — גודל מינימלי מומלץ למגע */
+.marker-tap {
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  cursor: pointer;
+}
+
 /* מרקר ממוספר */
 .num-marker {
   display: grid; place-items: center; width: 30px; height: 30px;
