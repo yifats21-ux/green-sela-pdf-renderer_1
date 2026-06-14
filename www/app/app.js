@@ -305,6 +305,8 @@ window.APP = (function () {
     map = L.map("leaf", { zoomControl: false, attributionControl: true });
     baseLayer = L.tileLayer(TILE, { attribution: ATTR, maxZoom: 19 }).addTo(map);
     L.control.zoom({ position: "bottomright" }).addTo(map);
+    // סרגל קנה מידה (ruler) בתחתית המפה
+    L.control.scale({ position: "bottomleft", metric: true, imperial: false, maxWidth: 130 }).addTo(map);
 
     buildRouteLayers();
     buildPlaceLayers();
