@@ -190,18 +190,30 @@ window.APP = (function () {
      ===================================================== */
   const TILE = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
   const ATTR = "&copy; OpenStreetMap &copy; CARTO";
-  let map, meMarker, routeLayers = [], foodMarkers = [], attractionMarkers = [], hotelMarker = null, visitedMarkers = [];
-  let showFood = true, showAttr = true, showVisited = true, activeDayFilter = 0;
+  // אורתופוטו (תצלום לוויין/אוויר) — Esri World Imagery, חינמי
+  const SAT_TILE = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+  const SAT_ATTR = "Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics";
+  // שמות רחובות מעל הלוויין (שכבת תוויות בלבד מ-CARTO)
+  const SAT_LABELS = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png";
+  let map, baseLayer = null, satLayer = null, satLabels = null, isSatellite = false;
+  let meMarker, routeLayers = [], hotelMarker = null, visitedMarkers = [];
+  let placeLayers = {};            // { cat: { markers:[], on:bool } }
+  let showVisited = false, activeDayFilter = 0;
 
   function numIcon(n, color) {
-    return L.divIcon({ className: "", html: `<div class="num-marker" style="background:${color}"><span>${n}</span></div>`, iconSize: [30, 30], iconAnchor: [15, 28] });
+    return L.divIcon({ className: "", html: `<div class="marker-tap"><div class="num-marker" style="background:${color}"><span>${n}</span></div></div>`, iconSize: [44, 44], iconAnchor: [22, 36] });
   }
   function foodIcon(f) {
     const ft = T.foodTypes[f.type];
-    return L.divIcon({ className: "", html: `<div class="food-marker" style="background:${ft.color}">${ft.emoji}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] });
+    return L.divIcon({ className: "", html: `<div class="marker-tap"><div class="food-marker" style="background:${ft.color}">${ft.emoji}</div></div>`, iconSize: [44, 44], iconAnchor: [22, 22] });
   }
   function attrIcon(a) {
-    return L.divIcon({ className: "", html: `<div class="food-marker" style="background:${ATTR_COLOR}">${a.emoji}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] });
+    return L.divIcon({ className: "", html: `<div class="marker-tap"><div class="food-marker" style="background:${ATTR_COLOR}">${a.emoji}</div></div>`, iconSize: [44, 44], iconAnchor: [22, 22] });
+  }
+  // מרקר נקודת גילוי — עיגול עם טבעת בצבע הקטגוריה, נבדל מפיני המסלול הממוספרים
+  function placeIcon(cat) {
+    const c = T.placeCategories[cat];
+    return L.divIcon({ className: "", html: `<div class="marker-tap"><div class="place-marker" style="--pc:${c.color}">${c.emoji}</div></div>`, iconSize: [44, 44], iconAnchor: [22, 22] });
   }
   function meIcon() {
     return L.divIcon({ className: "", html: `<div class="me-dot"><div class="pulse"></div><div class="core"></div></div>`, iconSize: [20, 20], iconAnchor: [10, 10] });
@@ -233,22 +245,71 @@ window.APP = (function () {
     });
   }
 
+  /* ---------- שכבות גילוי (קטגוריות) ---------- */
+  // ברירת מחדל: אילו קטגוריות דולקות בכניסה הראשונה
+  const DEFAULT_ON = ["cafe", "restaurant", "attraction"];
+  function placeLayerState() { return LS.get("map_layers", null); }
+  function isCatOn(cat) {
+    const saved = placeLayerState();
+    return saved ? !!saved[cat] : DEFAULT_ON.includes(cat);
+  }
+  function buildPlaceLayers() {
+    placeLayers = {};
+    Object.keys(T.placeCategories).forEach(cat => {
+      const on = isCatOn(cat);
+      const markers = (T.places || []).filter(p => p.cat === cat).map(p => {
+        const m = L.marker([p.lat, p.lng], { icon: placeIcon(cat) }).addTo(map);
+        m.on("click", () => openPlaceSheet(p.id));
+        if (!on && m.getElement()) m.getElement().style.display = "none";
+        return m;
+      });
+      if (!on) markers.forEach(m => { if (m.getElement()) m.getElement().style.display = "none"; });
+      placeLayers[cat] = { markers, on };
+    });
+  }
+  function toggleCategory(cat) {
+    const layer = placeLayers[cat];
+    if (!layer) return;
+    layer.on = !layer.on;
+    layer.markers.forEach(m => { if (m.getElement()) m.getElement().style.display = layer.on ? "" : "none"; });
+    const saved = placeLayerState() || {};
+    Object.keys(T.placeCategories).forEach(c => { if (saved[c] === undefined) saved[c] = isCatOn(c); });
+    saved[cat] = layer.on;
+    LS.set("map_layers", saved);
+  }
+  function placeById(id) { return (T.places || []).find(p => p.id === id); }
+
+  /* ---------- מעבר בין מפת רחובות לאורתופוטו ---------- */
+  function toggleBasemap() {
+    if (!map) return;
+    isSatellite = !isSatellite;
+    if (isSatellite) {
+      if (baseLayer) map.removeLayer(baseLayer);
+      satLayer = satLayer || L.tileLayer(SAT_TILE, { attribution: SAT_ATTR, maxZoom: 19 });
+      satLabels = satLabels || L.tileLayer(SAT_LABELS, { maxZoom: 19, opacity: .9 });
+      satLayer.addTo(map);
+      satLabels.addTo(map).bringToFront();
+    } else {
+      if (satLayer) map.removeLayer(satLayer);
+      if (satLabels) map.removeLayer(satLabels);
+      if (baseLayer) baseLayer.addTo(map).bringToBack();
+    }
+    const btn = $("#basemap-btn"), lbl = $("#basemap-label"), ic = btn && btn.querySelector(".bm-ic");
+    if (lbl) lbl.textContent = isSatellite ? "מפה" : "לוויין";
+    if (ic) ic.textContent = isSatellite ? "🗺️" : "🛰️";
+    if (btn) btn.classList.toggle("on", isSatellite);
+  }
+
   function initMap() {
     if (map) { setTimeout(() => map.invalidateSize(), 60); refreshHotel(); return; }
     map = L.map("leaf", { zoomControl: false, attributionControl: true });
-    L.tileLayer(TILE, { attribution: ATTR, maxZoom: 19 }).addTo(map);
+    baseLayer = L.tileLayer(TILE, { attribution: ATTR, maxZoom: 19 }).addTo(map);
     L.control.zoom({ position: "bottomright" }).addTo(map);
+    // סרגל קנה מידה (ruler) בתחתית המפה
+    L.control.scale({ position: "bottomleft", metric: true, imperial: false, maxWidth: 130 }).addTo(map);
 
     buildRouteLayers();
-
-    foodMarkers = T.food.map(f => {
-      const m = L.marker([f.lat, f.lng], { icon: foodIcon(f) }).addTo(map);
-      m.on("click", () => openFoodSheet(f.id)); return m;
-    });
-    attractionMarkers = (T.attractions || []).map(a => {
-      const m = L.marker([a.lat, a.lng], { icon: attrIcon(a) }).addTo(map);
-      m.on("click", () => openAttractionSheet(a.id)); return m;
-    });
+    buildPlaceLayers();
 
     meMarker = L.marker([T.userStart.lat, T.userStart.lng], { icon: meIcon(), zIndexOffset: 1000 }).addTo(map);
     refreshHotel();
@@ -258,8 +319,24 @@ window.APP = (function () {
     map.fitBounds(all, { padding: [50, 50] });
     setTimeout(() => map.invalidateSize(), 120);
     buildDayFilter();
+    buildLayersPanel();
     wireMapToggles();
     if (settings().gps) startGPS();
+  }
+  function buildLayersPanel() {
+    const list = $("#lp-list"); if (!list) return;
+    list.innerHTML = Object.entries(T.placeCategories).map(([cat, c]) => `
+      <button class="lp-row" data-cat="${cat}" data-on="${isCatOn(cat)}">
+        <span class="lp-dot" style="background:${c.color}">${c.emoji}</span>
+        <span class="lp-label">${c.label}</span>
+        <span class="lp-count">${(T.places || []).filter(p => p.cat === cat).length}</span>
+        <span class="lp-check"></span>
+      </button>`).join("");
+    $$("#lp-list .lp-row").forEach(b => b.addEventListener("click", () => {
+      const cat = b.dataset.cat;
+      toggleCategory(cat);
+      b.dataset.on = placeLayers[cat].on;
+    }));
   }
   function refreshHotel() {
     if (!map) return;
@@ -298,17 +375,24 @@ window.APP = (function () {
     else map.flyToBounds(T.sites.map(s => [s.lat, s.lng]), { padding: [50, 50], duration: .6 });
   }
   function wireMapToggles() {
-    $("#tg-food").addEventListener("click", e => {
-      showFood = !showFood; e.currentTarget.classList.toggle("on", showFood);
-      foodMarkers.forEach(m => m.getElement() && (m.getElement().style.display = showFood ? "" : "none"));
+    const fab = $("#layers-fab"), panel = $("#layers-panel");
+    if (fab && panel) {
+      fab.addEventListener("click", (e) => {
+        e.stopPropagation();
+        panel.classList.toggle("open");
+        fab.classList.toggle("on", panel.classList.contains("open"));
+      });
+      // סגירה בכל נגיעה על קנבס המפה — גם רקע וגם מרקרים
+      const closeLayers = () => { panel.classList.remove("open"); fab.classList.remove("on"); };
+      $("#leaf").addEventListener("touchstart", closeLayers, { passive: true });
+      map.on("click", closeLayers);
+    }
+    const vis = $("#tg-visited");
+    if (vis) vis.addEventListener("click", () => {
+      showVisited = !showVisited; vis.dataset.on = showVisited; vis.classList.toggle("on", showVisited); refreshMapVisited();
     });
-    $("#tg-attr").addEventListener("click", e => {
-      showAttr = !showAttr; e.currentTarget.classList.toggle("on", showAttr);
-      attractionMarkers.forEach(m => m.getElement() && (m.getElement().style.display = showAttr ? "" : "none"));
-    });
-    $("#tg-visited").addEventListener("click", e => {
-      showVisited = !showVisited; e.currentTarget.classList.toggle("on", showVisited); refreshMapVisited();
-    });
+    const bm = $("#basemap-btn");
+    if (bm) bm.addEventListener("click", toggleBasemap);
     $("#locate-btn").addEventListener("click", () => {
       const p = meMarker ? meMarker.getLatLng() : T.userStart;
       map.flyTo([p.lat, p.lng], 15, { duration: .7 });
@@ -492,7 +576,59 @@ window.APP = (function () {
     $$("#sheet [data-walkattr]").forEach(b => b.addEventListener("click", () => { closeSheet(); openWalk(null, null, attractionById(b.dataset.walkattr)); }));
     wireRating($("#sheet"), key, a.he, { type: "attraction", lat: a.lat, lng: a.lng, day: currentDay() });
   }
-  function openSheetEl() { $("#sheet").classList.add("open"); $("#scrim").classList.add("open"); }
+  function openPlaceSheet(id) {
+    const p = placeById(id); if (!p) return;
+    const c = T.placeCategories[p.cat], key = "p" + id;
+    $("#sheet").innerHTML = `
+      <div class="sheet__grab"></div>
+      <div class="sheet__top">
+        <span class="pin" style="background:${c.color};position:relative">${c.emoji}${isVisited(key) ? `<span class="visited-badge">${IC.check}</span>` : ""}</span>
+        <div style="flex:1"><div class="sheet__name">${p.he}</div><div class="sheet__en">${p.name} · ${p.area}</div></div>
+      </div>
+      <div style="margin:6px 0 2px"><span class="food-type-chip" style="background:${c.color}">${c.emoji} ${c.label}</span> <span class="hint-pill" style="margin-inline-start:6px">גילוי על המפה</span></div>
+      <div class="didyouknow" style="background:${hexA(c.color, .07)};border-color:${hexA(c.color, .28)};margin-top:12px">
+        <div class="didyouknow__h" style="color:${c.color}">📍 למה שווה לבקר?</div>
+        <p class="didyouknow__t">${p.note}</p>
+        ${p.link ? `<a class="didyouknow__link" href="${p.link}" target="_blank" rel="noopener">${IC.link} קרא עוד</a>` : ""}
+      </div>
+      <div class="rate-box">
+        <div class="rb-h"><span class="t">היית כאן? דרג ותעד</span>${ratingStars(key)}</div>
+        <textarea class="rate-note" id="note-${key}" placeholder="מה זכור לך מהמקום? (נשמר ביומן)">${(ratings()[key] || {}).note || ""}</textarea>
+      </div>
+      <div class="sheet__cta">
+        <button class="btn btn--accent" style="flex:1" data-walkplace="${id}">${IC.nav} נווט אליי</button>
+        <button class="btn btn--ghost" style="flex:0 0 auto;width:auto;padding:14px 18px" id="sheet-close-btn">סגור</button>
+      </div>`;
+    openSheetEl();
+    $("#sheet-close-btn").addEventListener("click", closeSheet);
+    $$("#sheet [data-walkplace]").forEach(b => b.addEventListener("click", () => {
+      const pl = placeById(b.dataset.walkplace);
+      closeSheet(); openWalk(null, null, { he: pl.he, area: pl.area, lat: pl.lat, lng: pl.lng, emoji: c.emoji, id: pl.id });
+    }));
+    wireRating($("#sheet"), key, p.he, { type: "place", lat: p.lat, lng: p.lng, day: currentDay() });
+  }
+  // hex → rgba עם שקיפות
+  function hexA(hex, a) {
+    const h = hex.replace("#", "");
+    const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  function openSheetEl() {
+    // סגור פאנל שכבות אם פתוח — כל לחיצה על מרקר סוגרת אותו
+    const panel = $("#layers-panel"), fab = $("#layers-fab");
+    if (panel) panel.classList.remove("open");
+    if (fab) fab.classList.remove("on");
+    // הוסף כפתור X לסגירה בפינה השמאלית העליונה
+    const sh = $("#sheet");
+    const xBtn = document.createElement("button");
+    xBtn.className = "sheet-x-btn";
+    xBtn.setAttribute("aria-label", "סגור");
+    xBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+    xBtn.addEventListener("click", closeSheet);
+    sh.insertBefore(xBtn, sh.firstChild);
+    sh.classList.add("open");
+    $("#scrim").classList.add("open");
+  }
   function closeSheet() { $("#sheet").classList.remove("open"); $("#scrim").classList.remove("open"); }
 
   /* =====================================================
@@ -612,6 +748,8 @@ window.APP = (function () {
   $$(".tab").forEach(t => t.addEventListener("click", () => showScreen(t.dataset.screen)));
   $("#scrim").addEventListener("click", closeSheet);
   $("#walk-close").addEventListener("click", closeWalk);
+  const mapMenuBtn = $("#map-menu-btn");
+  if (mapMenuBtn) mapMenuBtn.addEventListener("click", () => showScreen("home"));
 
   /* ---------- ברכת פתיחה ---------- */
   function buildConfetti() {
@@ -624,6 +762,91 @@ window.APP = (function () {
   $("#welcome-skip").addEventListener("click", dismissWelcome);
   $("#welcome-voice").addEventListener("click", e => playVoice("welcome", e.currentTarget));
 
+  /* ---------- Google Photos API ---------- */
+  window.addEventListener("message", (e) => {
+    if (e.data.type === "oauth_code") {
+      const { code, service } = e.data;
+      fetch("/api/google-oauth-exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, service })
+      }).then(r => r.json()).then(async data => {
+        if (data.accessToken) {
+          const auth = LS.get("google_auth", { photos: null, drive: null });
+          auth[service] = data.accessToken;
+          LS.set("google_auth", auth);
+          toast("✅", "מחובר", `${service === "photos" ? "Google Photos" : "Drive"} מחובר בהצלחה!`);
+
+          // אם הם התחברו ל-Google Photos, תיאו תמונות אוטומטית
+          if (service === "photos") {
+            const s = settings();
+            if (s.flightArrDate && s.flightBackDate) {
+              toast("📸", "טוען תמונות...", "אתר תמונות מהטיול שלך");
+              await fetchGooglePhotos(new Date(s.flightArrDate), new Date(s.flightBackDate));
+            }
+          }
+          window.renderJournal?.();
+        } else if (data.error) {
+          toast("❌", "שגיאה", data.error);
+        }
+      }).catch(e => toast("❌", "שגיאה", "שגיאה בחיבור: " + e.message));
+    } else if (e.data.type === "oauth_error") {
+      toast("❌", "שגיאה בחיבור", e.data.error);
+    }
+  });
+
+  async function fetchGooglePhotos(startDate, endDate) {
+    const auth = LS.get("google_auth", { photos: null, drive: null });
+    if (!auth.photos) return [];
+    try {
+      const r = await fetch("/api/google-photos-fetch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accessToken: auth.photos,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString()
+        })
+      });
+      const data = await r.json();
+      if (data.mediaItems && data.mediaItems.length > 0) {
+        toast("📸", "תמונות נטענות", `נמצאו ${data.mediaItems.length} תמונות מהטיול`);
+        distributePhotosToJournal(data.mediaItems, startDate, endDate);
+        return data.mediaItems;
+      }
+      return [];
+    } catch (e) {
+      console.error("Photo fetch error:", e);
+      return [];
+    }
+  }
+
+  function distributePhotosToJournal(mediaItems, startDate, endDate) {
+    const photos = mediaItems.map(m => ({
+      date: new Date(m.mediaMetadata.creationTime),
+      url: m.baseUrl + "=w400-h400"
+    })).filter(p => p.date >= startDate && p.date <= endDate);
+
+    photos.forEach((photo, idx) => {
+      const day = T.days.find(d => {
+        const start = new Date(A.settings().flightArrDate);
+        const photoDate = new Date(photo.date.toISOString().slice(0, 10));
+        const dayStart = new Date(start.getTime() + (d.id - 1) * 24 * 60 * 60 * 1000);
+        const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+        return photoDate >= dayStart && photoDate < dayEnd;
+      });
+
+      if (!day) return;
+      const slotNum = (idx % 4) + 1;
+      const slotId = `ph-d${day.id}-${slotNum}`;
+      const slot = $(slotId);
+      if (slot) {
+        slot.setAttribute("src", photo.url);
+        LS.set(`photo_d${day.id}_${slotNum}`, photo.url);
+      }
+    });
+  }
+
   // ממשק ציבורי
   return {
     T, LS, IC, $, $$, toast, playVoice, showScreen, openSheet, openFoodSheet, openAttractionSheet, openWalk,
@@ -631,6 +854,6 @@ window.APP = (function () {
     routeEdits, setRouteEdits, clearRouteEdits, addedStops, setAddedStops, nextAddedN, pinLabel,
     settings, saveSettings, hotelArea, arrivalPlan, ratings, setRating, journal, addJournal, isVisited,
     currentDay, refreshMapVisited, refreshHotel, startGPS, stopGPS, playMoments, sharePrompt,
-    buildConfetti, proximityScan, clearOffered: () => offered.clear(), closeWalk,
+    buildConfetti, proximityScan, clearOffered: () => offered.clear(), closeWalk, fetchGooglePhotos,
   };
 })();
