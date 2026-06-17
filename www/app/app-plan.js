@@ -442,6 +442,12 @@
     });
     return out;
   }
+  // שורת הסיכום של המלון (מתחת לשדות) — מופרדת כדי שנעדכן אותה בלי לרנדר את כל המסך
+  function hotelSummaryHtml(name) {
+    return name
+      ? `<div class="mini-summary">🏨 <span><b>${name}</b> סומן על המפה ומשמש כנקודת הבית של הטיול.</span></div>`
+      : "";
+  }
   window.renderPlan = function () {
     const s = A.settings(), reminders = buildReminders();
     const on = LS.get("reminders_on", true), dyk = LS.get("dyk_on", true), voice = LS.get("voice_on", true);
@@ -469,7 +475,7 @@
         <div class="field focusable field--full"><label>אזור / מיקום</label>
           <select id="h-area">${T.hotelAreas.map(a => `<option value="${a.id}" ${a.id === s.hotelAreaId ? "selected" : ""}>${a.label}</option>`).join("")}</select>
         </div>
-        ${s.hotelName ? `<div class="mini-summary">🏨 <span><b>${s.hotelName}</b> סומן על המפה ומשמש כנקודת הבית של הטיול.</span></div>` : ""}
+        <div id="h-summary">${hotelSummaryHtml(s.hotelName)}</div>
       </div>
 
       <div class="section-label">איך מגיעים מהשדה למלון</div>
@@ -507,7 +513,15 @@
     bind("f-outd", "flightOutDate"); bind("f-outt", "flightOutTime");
     bind("f-arrd", "flightArrDate"); bind("f-arrt", "flightArrTime");
     bind("f-backd", "flightBackDate"); bind("f-backt", "flightBackTime");
-    bind("h-name", "hotelName", "input"); bind("h-area", "hotelAreaId");
+    // שם המלון: שמירה חיה + סימון על המפה תוך כדי הקלדה, בלי רינדור מחדש של המסך
+    // (רינדור מחדש בכל אות הרס את שדה הקלט וסגר את המקלדת אחרי אות אחת)
+    const hn = $("#h-name");
+    if (hn) hn.addEventListener("input", () => {
+      A.saveSettings({ hotelName: hn.value });
+      A.refreshHotel();
+      const sum = $("#h-summary"); if (sum) sum.innerHTML = hotelSummaryHtml(hn.value);
+    });
+    bind("h-area", "hotelAreaId");
     $$("#transfer-seg button").forEach(b => b.addEventListener("click", () => { A.saveSettings({ transferMethod: b.dataset.tm }); window.renderPlan(); }));
     const sv = $("#save-transfer");
     if (sv) sv.addEventListener("click", () => {
