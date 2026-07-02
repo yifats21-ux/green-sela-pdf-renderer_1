@@ -118,6 +118,65 @@ body {
 }
 .card + .card { margin-top: 13px; }
 
+/* ===================== מרכז הטיולים (switcher + hub) ===================== */
+.trip-switch {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 10px 14px; margin: 6px 0 2px; cursor: pointer;
+  font-family: var(--font); color: var(--ink);
+  box-shadow: 0 10px 24px -20px rgba(42,25,20,.5);
+}
+.trip-switch .ts-ic { font-size: 18px; }
+.trip-switch .ts-name { flex: 1; font-size: 15px; font-weight: 700; text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trip-switch .ts-badge { background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; min-width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; padding: 0 6px; }
+.trip-switch svg { color: var(--muted); }
+
+.trips-list { display: flex; flex-direction: column; gap: 8px; }
+.trip-row {
+  display: flex; align-items: center; gap: 11px; cursor: pointer;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 11px 13px;
+}
+.trip-row.on { border-color: var(--primary); background: rgba(122,31,43,.05); }
+.trip-row .trip-emoji { font-size: 20px; flex: 0 0 auto; }
+.trip-row .trip-meta { flex: 1; min-width: 0; }
+.trip-row .trip-nm { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+.trip-badge { background: var(--green); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.trip-row .trip-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.trip-go {
+  flex: 0 0 auto; border: 1px solid var(--line-2); background: var(--card); color: var(--primary);
+  border-radius: 10px; padding: 7px 13px; font-family: var(--font); font-size: 12.5px; font-weight: 700; cursor: pointer;
+}
+.trip-del { flex: 0 0 auto; border: 0; background: none; cursor: pointer; font-size: 16px; opacity: .6; padding: 4px; }
+.trip-del:active { opacity: 1; }
+
+.trip-create {
+  margin-top: 10px; padding: 13px; background: var(--paper-2);
+  border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; gap: 9px;
+}
+.trip-create input {
+  height: 40px; padding: 0 13px; border: 1px solid var(--line-2); border-radius: 11px; background: var(--card);
+  font-family: var(--font); font-size: 14px; color: var(--ink); outline: none; width: 100%;
+}
+.trip-create input:focus { border-color: var(--primary); }
+.trip-create .tc-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.trip-create .tc-row label { font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+.trip-create .tc-row input { width: 90px; direction: ltr; text-align: center; }
+
+.members-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.member-row {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 8px 6px 12px;
+}
+.member-row .member-emoji { font-size: 15px; }
+.member-row .member-nm { font-size: 13px; font-weight: 700; }
+.member-row .member-del { border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 13px; padding: 0 2px; line-height: 1; }
+.member-add { display: flex; gap: 8px; margin-top: 10px; }
+.member-add input {
+  flex: 1; min-width: 0; height: 40px; padding: 0 13px; border: 1px solid var(--line-2); border-radius: 11px;
+  background: var(--card); font-family: var(--font); font-size: 14px; color: var(--ink); outline: none;
+}
+.member-add input:focus { border-color: var(--primary); }
+
 /* ===================== מסך פתיחה / ברכה ===================== */
 .welcome {
   position: absolute; inset: 0; z-index: 120;

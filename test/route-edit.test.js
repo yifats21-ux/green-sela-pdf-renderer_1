@@ -63,11 +63,11 @@ $('#screen-trip [data-skip="3"]').click();
 check("הדילוג על התחנה האחרונה ביום נחסם", names(1).length > 0);
 
 // שמירה: הכל נשמר ב-storage ושורד "רענון" (טעינת אפליקציה חדשה)
-const saved = w.localStorage.getItem("vie_route_edits");
+const saved = w.localStorage.getItem("vie_vienna_route_edits");
 const dom2 = new JSDOM(html, { runScripts: "outside-only", url: "https://localhost/" });
 dom2.window.L = w.L;
 dom2.window.requestAnimationFrame = (cb) => setTimeout(cb, 0);
-dom2.window.localStorage.setItem("vie_route_edits", saved);
+dom2.window.localStorage.setItem("vie_vienna_route_edits", saved);
 for (const f of ["image-slot.js", "data.js", "app.js", "app-plan.js"]) {
   dom2.window.eval(fs.readFileSync("www/app/" + f, "utf8"));
 }
@@ -108,11 +108,11 @@ check("תחנה חופשית נוספה לסוף יום 2", names2(2).endsWith("
 check("לתחנה החופשית יש קואורדינטות (מרכז היום)", Number.isFinite(A2.siteByN(102).lat));
 
 // שמירה אחרי "רענון"
-const saved2 = dom2.window.localStorage.getItem("vie_route_added");
+const saved2 = dom2.window.localStorage.getItem("vie_vienna_route_added");
 const dom4 = new JSDOM(html, { runScripts: "outside-only", url: "https://localhost/" });
 dom4.window.L = w.L;
 dom4.window.requestAnimationFrame = (cb) => setTimeout(cb, 0);
-dom4.window.localStorage.setItem("vie_route_added", saved2);
+dom4.window.localStorage.setItem("vie_vienna_route_added", saved2);
 for (const f of ["image-slot.js", "data.js", "app.js", "app-plan.js"]) {
   dom4.window.eval(fs.readFileSync("www/app/" + f, "utf8"));
 }

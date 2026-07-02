@@ -4,7 +4,7 @@
    גם בלי אינטרנט (אריחי המפה עצמם דורשים רשת).
    בכל עדכון לאפליקציה — להעלות את מספר הגרסה כאן.
    =========================================================== */
-const VERSION = "vie-v9";
+const VERSION = "vie-v10";
 const SHELL = [
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ const SHELL = [
   "./app/native.js",
   "./app/image-slot.js",
   "./app/data.js",
+  "./app/trips.js",
   "./app/app.js",
   "./app/app-plan.js",
   "./vendor/leaflet/leaflet.css",

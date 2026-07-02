@@ -5,9 +5,14 @@ window.APP = (function () {
   const T = window.TRIP;
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  // מפתחות כלל-אפליקציה (לא תלויים בטיול הפעיל). כל השאר מנוקדים לפי הטיול הפעיל,
+  // כך שלכל טיול יש מסלול, יומן, דירוגים והגדרות משלו.
+  const GLOBAL_LS_KEYS = new Set(["seen_welcome", "tab", "trips", "active_trip", "reminders_on", "dyk_on", "voice_on"]);
+  const activeTripId = () => (window.APP_TRIPS && window.APP_TRIPS.activeId && window.APP_TRIPS.activeId()) || "vienna";
+  const lsKey = (k) => GLOBAL_LS_KEYS.has(k) ? ("vie_" + k) : ("vie_" + activeTripId() + "_" + k);
   const LS = {
-    get: (k, d) => { try { const v = localStorage.getItem("vie_" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
-    set: (k, v) => { try { localStorage.setItem("vie_" + k, JSON.stringify(v)); } catch {} },
+    get: (k, d) => { try { const v = localStorage.getItem(lsKey(k)); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set: (k, v) => { try { localStorage.setItem(lsKey(k), JSON.stringify(v)); } catch {} },
   };
 
   /* ---------- אייקונים ---------- */

@@ -7,6 +7,108 @@
   let teaserIdx = 0;
 
   /* =====================================================
+     מרכז הטיולים — מעבר בין טיולים, יצירה, קבוצה, שיתוף
+     ===================================================== */
+  function tripSwitchHtml() {
+    const AT = window.APP_TRIPS;
+    const name = AT ? (AT.active().name || "טיול") : (T.city || "הטיול שלי");
+    const cnt = AT ? AT.list().length : 1;
+    return `<button class="trip-switch" id="trip-switch" aria-label="החלף טיול">
+      <span class="ts-ic">🧳</span>
+      <span class="ts-name">${name}</span>
+      <span class="ts-badge">${cnt}</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M6 9l6 6 6-6"/></svg>
+    </button>`;
+  }
+  function openTripsHub() { renderTripsHub(); $("#trips-sheet").classList.add("open"); $("#trips-scrim").classList.add("open"); }
+  function closeTripsHub() { $("#trips-sheet").classList.remove("open"); $("#trips-scrim").classList.remove("open"); }
+  let tripCreateOpen = false;
+  function renderTripsHub() {
+    const AT = window.APP_TRIPS; if (!AT) return;
+    const trips = AT.list(), active = AT.active(), members = active.members || [];
+    $("#trips-sheet").innerHTML = `
+      <div class="sheet__grab"></div>
+      <button class="sheet-x-btn" id="trips-x" aria-label="סגור"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="sheet__name" style="margin-bottom:4px">הטיולים שלי</div>
+      <div class="scr-sub" style="margin-bottom:12px">עברו בין טיולים, צרו חדש, נהלו את הקבוצה ושתפו בקישור.</div>
+      <div class="trips-list">
+        ${trips.map(t => `
+          <div class="trip-row ${t.active ? "on" : ""}" data-trip="${t.id}">
+            <span class="trip-emoji">${t.example ? "⭐" : "🧳"}</span>
+            <div class="trip-meta">
+              <div class="trip-nm">${t.name}${t.active ? ` <span class="trip-badge">פעיל</span>` : ""}</div>
+              <div class="trip-sub">${t.city ? t.city + " · " : ""}${t.stops} תחנות · ${t.members} בקבוצה</div>
+            </div>
+            ${t.active ? "" : `<button class="trip-go" data-go="${t.id}">פתח</button>`}
+            ${t.example ? "" : `<button class="trip-del" data-del="${t.id}" aria-label="מחק">🗑</button>`}
+          </div>`).join("")}
+      </div>
+      <button class="btn btn--ghost btn--sm" id="trip-new-btn" style="width:100%;margin-top:12px">＋ צור טיול חדש</button>
+      ${tripCreateOpen ? `
+      <div class="trip-create">
+        <input type="text" id="tc-name" placeholder="שם הטיול (למשל: רומא עם החברים)">
+        <input type="text" id="tc-city" placeholder="עיר / יעד (למשל: רומא)">
+        <div class="tc-row"><label>מספר ימים</label><input type="number" id="tc-days" min="1" max="14" value="3"></div>
+        <button class="btn btn--accent btn--sm" id="tc-create" style="width:100%">צור והתחל לתכנן</button>
+      </div>` : ""}
+      <div class="section-label" style="margin:18px 2px 8px">הקבוצה של «${active.name}»</div>
+      <div class="members-list">
+        ${members.length ? members.map(m => `
+          <div class="member-row" data-member="${m.id}">
+            <span class="member-emoji">${m.emoji || "🙂"}</span>
+            <span class="member-nm">${m.name}</span>
+            <button class="member-del" data-delmember="${m.id}" aria-label="הסר">✕</button>
+          </div>`).join("") : `<div class="empty-note" style="padding:8px 2px">עוד אין חברי קבוצה. הוסיפו את מי שנוסע איתכם.</div>`}
+      </div>
+      <div class="member-add">
+        <input type="text" id="ma-name" placeholder="שם חבר/ת קבוצה">
+        <button class="btn btn--ghost btn--sm" id="ma-add" style="width:auto;flex:0 0 auto">＋ הוסף</button>
+      </div>
+      <button class="btn btn--sm" id="trip-share" style="width:100%;margin-top:14px">🔗 העתק קישור לשיתוף הטיול</button>
+      <div style="height:8px"></div>`;
+    wireTripsHub();
+  }
+  function wireTripsHub() {
+    const AT = window.APP_TRIPS;
+    $("#trips-x").addEventListener("click", closeTripsHub);
+    $$("#trips-sheet .trip-row").forEach(row => row.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return;
+      const id = row.dataset.trip;
+      if (AT.activeId() !== id) { AT.switchTo(id); location.reload(); }
+    }));
+    $$("#trips-sheet [data-go]").forEach(b => b.addEventListener("click", () => { AT.switchTo(b.dataset.go); location.reload(); }));
+    $$("#trips-sheet [data-del]").forEach(b => b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (AT.remove(b.dataset.del)) { A.toast("🗑️", "הטיול נמחק", ""); renderTripsHub(); }
+    }));
+    $("#trip-new-btn").addEventListener("click", () => { tripCreateOpen = !tripCreateOpen; renderTripsHub(); });
+    const tc = $("#tc-create");
+    if (tc) tc.addEventListener("click", () => {
+      const name = ($("#tc-name").value || "").trim();
+      const city = ($("#tc-city").value || "").trim();
+      const days = parseInt(($("#tc-days") || {}).value, 10) || 3;
+      if (!name) { A.toast("🧳", "רגע", "תנו שם לטיול לפני היצירה."); return; }
+      const id = AT.create(name, { city, days });
+      AT.switchTo(id); location.reload();
+    });
+    const ma = $("#ma-add");
+    if (ma) ma.addEventListener("click", () => {
+      const nm = ($("#ma-name").value || "").trim();
+      if (!nm) { A.toast("👥", "רגע", "כתבו שם לפני ההוספה."); return; }
+      AT.addMember(AT.activeId(), nm); renderTripsHub();
+    });
+    $$("#trips-sheet [data-delmember]").forEach(b => b.addEventListener("click", () => { AT.removeMember(AT.activeId(), b.dataset.delmember); renderTripsHub(); }));
+    const sh = $("#trip-share");
+    if (sh) sh.addEventListener("click", () => {
+      const link = AT.exportLink(AT.activeId());
+      const done = () => A.toast("🔗", "הקישור הועתק", "שלחו אותו לחברי הקבוצה — הם יפתחו את אותו הטיול.");
+      try { navigator.clipboard.writeText(link).then(done, () => A.toast("🔗", "קישור לשיתוף", link)); }
+      catch (e) { A.toast("🔗", "קישור לשיתוף", link); }
+    });
+  }
+  window.openTripsHub = openTripsHub;
+
+  /* =====================================================
      מסך בית
      ===================================================== */
   function arrivalCard() {
@@ -32,8 +134,10 @@
     const tz = T.teasers[teaserIdx % T.teasers.length];
     const dots = T.teasers.map((_, i) => `<span class="${i === teaserIdx % T.teasers.length ? "on" : ""}"></span>`).join("");
     const startTimes = ["09:00", "11:30", "14:00", "16:30"];
+    const greetName = (T.traveler && T.traveler.trim()) ? (", " + T.traveler.trim()) : "";
     $("#screen-home").innerHTML = `
-      <div class="scr-head"><div class="scr-kicker">בוקר טוב, שלומי 👋</div><h1 class="scr-title">מה עושים היום</h1></div>
+      ${tripSwitchHtml()}
+      <div class="scr-head"><div class="scr-kicker">בוקר טוב${greetName} 👋</div><h1 class="scr-title">מה עושים היום</h1></div>
       <div class="teaser" id="teaser">
         <div class="teaser__emoji">${tz.emoji}</div>
         <div class="teaser__t">${tz.t}</div>
@@ -45,6 +149,7 @@
         <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px">
           <span class="daychip" style="background:${meta.color}">יום ${d} · ${meta.title}</span>
         </div>
+        ${first ? `
         <div class="next-row">
           <span class="pin">${A.pinLabel(first)}</span>
           <div><div class="nm">${first.name}</div><div class="mt">התחנה הראשונה היום</div></div>
@@ -53,7 +158,8 @@
         <div style="display:flex;gap:10px;margin-top:15px">
           <button class="btn btn--sm" style="flex:1" data-walk="${first.n}">${IC.nav} נווט אליי</button>
           <button class="btn btn--ghost btn--sm" style="flex:1" data-site="${first.n}">פרטים</button>
-        </div>
+        </div>` : `
+        <div class="empty-note">עוד אין תחנות ביום הזה. עברו ללשונית ‹מסלול›, לחצו ✏️ ערוך והוסיפו תחנות — או שתפו את הטיול עם הקבוצה.</div>`}
       </div>
 
       <div class="card" style="margin-top:13px;display:flex;align-items:center;gap:13px">
@@ -89,6 +195,7 @@
     $$("#screen-home [data-walk]").forEach(b => b.addEventListener("click", () => A.openWalk(+b.dataset.walk)));
     $$("#screen-home [data-voice]").forEach(b => b.addEventListener("click", e => A.playVoice(b.dataset.voice, e.currentTarget)));
     $$("#screen-home [data-setday]").forEach(b => b.addEventListener("click", () => { LS.set("current_day", +b.dataset.setday); window.renderHome(); }));
+    const sw = $("#trip-switch"); if (sw) sw.addEventListener("click", openTripsHub);
     const tz = $("#teaser"); if (tz) tz.addEventListener("click", () => { teaserIdx++; refreshTeaser(); });
     const demo = $("#screen-home [data-demo-rec]");
     if (demo) demo.addEventListener("click", () => {
@@ -436,6 +543,7 @@
       const dt = new Date(base); dt.setDate(base.getDate() + i);
       const ds = dt.toLocaleDateString("he-IL", { weekday: "short", day: "numeric", month: "short" });
       const stops = A.dayStops(d.id);
+      if (!stops.length) return;   // יום ללא תחנות — אין תזכורת
       out.push({ t: i === 0 && A.arrivalPlan() ? A.fmtTime(A.arrivalPlan().firstStart) : "08:30", nm: `יום ${d.id}: ${d.title}`, ms: `צאו לכיוון ${stops[0].name}`, d: ds });
       const closer = stops.find(s => /17:30|16:30/.test(s.hours));
       if (closer) out.push({ t: "15:45", nm: "לא לפספס!", ms: `${closer.name} נסגר בקרוב`, d: ds });
@@ -550,6 +658,7 @@
      אתחול
      ===================================================== */
   A.buildConfetti();
+  const tScrim = $("#trips-scrim"); if (tScrim) tScrim.addEventListener("click", closeTripsHub);
   window.renderHome(); window.renderTrip();
   // בכניסה הראשונה הברכה נשארת עד לחיצה; בכניסות הבאות היא מוצגת
   // לכמה שניות (ברכת "ברוך השב") וממשיכה לבד לאפליקציה.
