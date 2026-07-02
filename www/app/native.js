@@ -125,7 +125,7 @@
     });
   }
 
-  var APP_SCRIPTS = ["app/image-slot.js", "app/data.js", "app/app.js", "app/app-plan.js"];
+  var APP_SCRIPTS = ["app/image-slot.js", "app/data.js", "app/trips.js", "app/app.js", "app/app-plan.js"];
 
   function boot() {
     // כשרצים כאתר/PWA (לא בתוך האפליקציה הנייטיבית) — עבודה אופליין
